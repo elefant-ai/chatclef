@@ -37,7 +37,6 @@ public class Player2APIService {
                 os.write(input, 0, input.length);
             }
         }
-
         int responseCode = connection.getResponseCode();
         if (responseCode != 200) {
             throw new IOException("HTTP " + responseCode + ": " + connection.getResponseMessage());
