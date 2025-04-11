@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.butler.Butler;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
+import adris.altoclef.player2api.status.AgentStatus;
 import adris.altoclef.skinchanger.SkinChanger;
 import adris.altoclef.skinchanger.SkinType;
 import adris.altoclef.tasksystem.Task;
@@ -64,9 +65,9 @@ Current Status:
         Character newCharacter = Player2APIService.getSelectedCharacter();
         System.out.println(newCharacter);
 //        SkinChanger.changeSkinFromUsername("Dream", SkinType.CLASSIC);
-        this.character = newCharacter;
+        // this.character = newCharacter;
 
-        // GET COMMANDS:
+        // // GET COMMANDS:
         int padSize = 10;
         StringBuilder commandListBuilder = new StringBuilder();
 
@@ -80,14 +81,11 @@ Current Status:
         }
         String validCommandsFormatted = commandListBuilder.toString();
 
-        // GET CURRENT STATUS:
-        String currentStatus;
-        List<Task> tasks = mod.getUserTaskChain().getTasks();
-        if (tasks.isEmpty()) {
-            currentStatus = ("No tasks currently running.");
-        } else {
-            currentStatus = ("CURRENT TASK: " + tasks.get(0).toString());
-        }
+
+
+        String currentStatus = AgentStatus.fromMod(mod).toString();
+
+
         String newPrompt = Utils.replacePlaceholders(initialPrompt, Map.of("characterDescription", character.description, "characterName", character.name, "validCommands", validCommandsFormatted, "currentStatus", currentStatus));
         System.out.println("New prompt: "+ newPrompt);
         if (this.conversationHistory == null) {
