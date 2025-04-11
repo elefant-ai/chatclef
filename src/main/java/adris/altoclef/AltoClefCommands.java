@@ -13,7 +13,6 @@ public class AltoClefCommands {
     public static void init() throws CommandException {
         // List commands here
         AltoClef.getCommandExecutor().registerNewCommand(
-                new HelpCommand(),
                 new GetCommand(),
                 new ListCommand(),
                 new EquipCommand(),
@@ -22,7 +21,6 @@ public class AltoClefCommands {
                 new GotoCommand(),
                 new IdleCommand(),
                 new HeroCommand(),
-                new CoordsCommand(),
                 new StatusCommand(),
                 new InventoryCommand(),
                 new LocateStructureCommand(),
@@ -30,12 +28,10 @@ public class AltoClefCommands {
                 new PauseCommand(),
                 new UnPauseCommand(),
                 new SetGammaCommand(),
-                new TestCommand(),
                 new FoodCommand(),
                 new MeatCommand(),
                 new ReloadSettingsCommand(),
                 new GamerCommand(),
-                new MarvionCommand(),
                 new DummyTaskCommand(),
                 new FollowCommand(),
                 new GiveCommand(),
