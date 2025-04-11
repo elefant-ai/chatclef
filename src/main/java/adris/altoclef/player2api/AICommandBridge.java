@@ -86,7 +86,7 @@ Current Status:
         if (tasks.isEmpty()) {
             currentStatus = ("No tasks currently running.");
         } else {
-            currentStatus = ("CURRENT TASK: " + tasks.get(0).toString());
+            currentStatus = ("RUNNING TASK: " + tasks.get(0).toString());
         }
         String newPrompt = Utils.replacePlaceholders(initialPrompt, Map.of("characterDescription", character.description, "characterName", character.name, "validCommands", validCommandsFormatted, "currentStatus", currentStatus));
         System.out.println("New prompt: "+ newPrompt);
