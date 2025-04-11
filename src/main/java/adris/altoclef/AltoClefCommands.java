@@ -11,6 +11,7 @@ import adris.altoclef.commands.GotoCommand;
 import adris.altoclef.commands.HeroCommand;
 import adris.altoclef.commands.IdleCommand;
 import adris.altoclef.commands.InventoryCommand;
+import adris.altoclef.commands.ListCommand;
 import adris.altoclef.commands.LocateStructureCommand;
 import adris.altoclef.commands.MeatCommand;
 import adris.altoclef.commands.PauseCommand;
