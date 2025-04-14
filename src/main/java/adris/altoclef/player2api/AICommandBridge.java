@@ -65,7 +65,7 @@ Current Status:
         Character newCharacter = Player2APIService.getSelectedCharacter();
         System.out.println(newCharacter);
 //        SkinChanger.changeSkinFromUsername("Dream", SkinType.CLASSIC);
-        // this.character = newCharacter;
+        this.character = newCharacter;
 
         // // GET COMMANDS:
         int padSize = 10;
