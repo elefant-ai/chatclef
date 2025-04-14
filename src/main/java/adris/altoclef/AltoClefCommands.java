@@ -14,6 +14,7 @@ import adris.altoclef.commands.LocateStructureCommand;
 import adris.altoclef.commands.MeatCommand;
 import adris.altoclef.commands.PauseCommand;
 import adris.altoclef.commands.ReloadSettingsCommand;
+import adris.altoclef.commands.SetAIBridgeEnabledCommand;
 import adris.altoclef.commands.SetGammaCommand;
 import adris.altoclef.commands.StashCommand;
 import adris.altoclef.commands.StopCommand;
@@ -47,7 +48,8 @@ public class AltoClefCommands {
                 new GamerCommand(),
                 new FollowCommand(),
                 new GiveCommand(),
-                new ScanCommand()
+                new ScanCommand(),
+                new SetAIBridgeEnabledCommand()
         );
     }
 }
