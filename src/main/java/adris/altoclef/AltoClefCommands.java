@@ -1,8 +1,24 @@
 package adris.altoclef;
 
-import adris.altoclef.commands.*;
+import adris.altoclef.commands.DepositCommand;
+import adris.altoclef.commands.EquipCommand;
+import adris.altoclef.commands.FollowCommand;
+import adris.altoclef.commands.FoodCommand;
+import adris.altoclef.commands.GamerCommand;
+import adris.altoclef.commands.GetCommand;
+import adris.altoclef.commands.GiveCommand;
+import adris.altoclef.commands.GotoCommand;
+import adris.altoclef.commands.HeroCommand;
+import adris.altoclef.commands.IdleCommand;
+import adris.altoclef.commands.LocateStructureCommand;
+import adris.altoclef.commands.MeatCommand;
+import adris.altoclef.commands.PauseCommand;
+import adris.altoclef.commands.ReloadSettingsCommand;
+import adris.altoclef.commands.SetGammaCommand;
+import adris.altoclef.commands.StashCommand;
+import adris.altoclef.commands.StopCommand;
+import adris.altoclef.commands.UnPauseCommand;
 import adris.altoclef.commands.random.ScanCommand;
-import adris.altoclef.commands.random.DummyTaskCommand;
 import adris.altoclef.commandsystem.CommandException;
 
 /**
@@ -13,30 +29,22 @@ public class AltoClefCommands {
     public static void init() throws CommandException {
         // List commands here
         AltoClef.getCommandExecutor().registerNewCommand(
-                new HelpCommand(),
                 new GetCommand(),
-                new ListCommand(),
                 new EquipCommand(),
                 new DepositCommand(),
                 new StashCommand(),
                 new GotoCommand(),
                 new IdleCommand(),
                 new HeroCommand(),
-                new CoordsCommand(),
-                new StatusCommand(),
-                new InventoryCommand(),
                 new LocateStructureCommand(),
                 new StopCommand(),
                 new PauseCommand(),
                 new UnPauseCommand(),
                 new SetGammaCommand(),
-                new TestCommand(),
                 new FoodCommand(),
                 new MeatCommand(),
                 new ReloadSettingsCommand(),
                 new GamerCommand(),
-                new MarvionCommand(),
-                new DummyTaskCommand(),
                 new FollowCommand(),
                 new GiveCommand(),
                 new ScanCommand()

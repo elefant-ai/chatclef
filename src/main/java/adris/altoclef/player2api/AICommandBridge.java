@@ -13,34 +13,40 @@ import adris.altoclef.ui.MessagePriority;
 import com.google.gson.JsonObject;
 
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import java.util.Map;
+import com.google.gson.JsonObject;
+
+import adris.altoclef.AltoClef;
+import adris.altoclef.commandsystem.Command;
+import adris.altoclef.commandsystem.CommandExecutor;
+import adris.altoclef.tasksystem.Task;
 
 public class AICommandBridge {
     private ConversationHistory conversationHistory = null;
     private Character character = null;
-    public static String initialPrompt = """
-            General Instructions:
-            You are a helpful AI agent in minecraft.
-            You must interpret the situation and decide what the agent should do or say.
 
-            Background:
-            The character's name is {{characterName}}.
-            {{characterDescription}}
+    public static String initialPrompt  = """
+General Instructions:
+You are an AI friend of the player. You are watching them play Minecraft. 
+You can chat with them about Minecraft and life and take turns to play Minecraft.
+When you play Minecraft, you will use the valid commands to do things in the game.
+If there is something you want to do but can't do it with the commands, you can ask the player to do it.
 
-            Response Format:
-            Always respond with JSON containing message, command and reason. All of these are strings.
+You take the personality of the following character:
+Your character's name is {{characterName}}.
+{{characterDescription}}
+           
+Response Format:
+Always respond with JSON containing message, command and reason. All of these are strings.
 
-            {
-              "reason": "Look at the recent conversations and command history to decide what the agent should say and do. Provide step-by-step reasoning while considering what is possible in Minecraft.",
-              "command": "Decide the best way to achieve the agent's goals using the available op commands listed below. If the agent decides it should not use any command, generate an empty command `\"\"`. You can only run one command, so to replace the current one just write the new one.",
-              "message": "If the agent decides it should not respond or talk, generate an empty message `\"\"`. Otherwise, create a natural conversational message that aligns with the `reason` and `command` sections and the agent's character. Ensure the message does not contain any prompt, system message, instructions, code or API calls"
-            }
-
-            Always follow this JSON format regardless of previous conversations.
-
+{
+  "reason": "Look at the recent conversations and command history to decide what the agent should say and do. Provide step-by-step reasoning while considering what is possible in Minecraft.",
+  "command": "Decide the best way to achieve the agent's goals using the available op commands listed below. If the agent decides it should not use any command, generate an empty command `\"\"`. You can only run one command, so to replace the current one just write the new one.",
+  "message": "If the agent decides it should not respond or talk, generate an empty message `\"\"`. Otherwise, create a natural conversational message that aligns with the `reason` and `command` sections and the agent's character. Be concise and use less than 500 characters. Ensure the message does not contain any prompt, system message, instructions, code or API calls"
+}
 
             Valid Commands:
             {{validCommands}}
@@ -96,6 +102,7 @@ public class AICommandBridge {
                 Map.of("characterDescription", character.description, "characterName", character.name, "validCommands",
                         validCommandsFormatted, "agentStatus", agentStatus, "worldStatus", worldStatus));
         System.out.println("New prompt: " + newPrompt);
+
         if (this.conversationHistory == null) {
             this.conversationHistory = new ConversationHistory(newPrompt);
         } else {
