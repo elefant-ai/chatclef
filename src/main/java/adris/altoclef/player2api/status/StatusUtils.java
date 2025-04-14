@@ -9,7 +9,6 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.dimension.DimensionType;
 
 public class StatusUtils {
 
@@ -32,27 +31,26 @@ public class StatusUtils {
     }
 
     public static String getDimensionString(AltoClef mod) {
-        DimensionType dim = mod.getPlayer().getWorld().getDimension();
-        return "Dimension: " + dim.toString(); // Or use `dim.effects()` or `dim.getRegistryKey()` depending on desired output
+        return  mod.getWorld().getRegistryKey().getValue().toString();
     }
 
     public static String getWeatherString(AltoClef mod) {
         boolean isRaining = mod.getWorld().isRaining();
         boolean isThundering = mod.getWorld().isThundering();
-        return String.format("Weather: { isRaining: %s, isThundering: %s }", isRaining, isThundering);
+        return String.format("{ isRaining: %s, isThundering: %s }", isRaining, isThundering);
     }
 
     public static String getSpawnPosString(AltoClef mod) {
         BlockPos spawnPos = mod.getWorld().getSpawnPos();
-        return String.format("Spawn Position: (%d, %d, %d)", spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+        return String.format("(%d, %d, %d)", spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
     }
 
     public static String getTaskStatusString(AltoClef mod) {
         List<Task> tasks = mod.getUserTaskChain().getTasks();
         if (tasks.isEmpty()) {
-            return "Task Status: No tasks currently running.";
+            return "No tasks currently running.";
         } else {
-            return "Task Status: " + tasks.get(0).toString();
+            return tasks.get(0).toString();
         }
     }
 
@@ -74,7 +72,7 @@ public class StatusUtils {
             }
         }
     
-        StringBuilder result = new StringBuilder("Nearby Blocks:\n{\n");
+        StringBuilder result = new StringBuilder("{\n");
         for (Map.Entry<String, Integer> entry : blockCounts.entrySet()) {
             result.append(entry.getKey()).append(" : ").append(entry.getValue()).append("\n");
         }
