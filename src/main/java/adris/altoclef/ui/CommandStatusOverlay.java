@@ -5,15 +5,15 @@ import adris.altoclef.multiversion.DrawContextWrapper;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
-import org.joml.Matrix4f;
+
 
 import java.awt.*;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -27,7 +27,7 @@ public class CommandStatusOverlay {
     public void render(AltoClef mod, DrawContextWrapper context) {
         List<Task> tasks = Collections.emptyList();
         if (mod.getTaskRunner().getCurrentTaskChain() != null) {
-            tasks = mod.getTaskRunner().getCurrentTaskChain().getTasks();
+            tasks = new ArrayList<>(mod.getTaskRunner().getCurrentTaskChain().getTasks());
         }
 
         MatrixStack matrixStack = context.getMatrices();
