@@ -81,13 +81,16 @@ public class AttackPlayerOrMobCommand extends Command {
                     return false;
                 }
 
-                String name = entity.getType().getUntranslatedName();
+                // Attack players possibly
                 if (entity instanceof PlayerEntity) {
                     String playerName = entity.getName().getString();
                     if (playerName != null && playerName.equals(_toKill)) {
                         return true;
                     }
                 }
+
+                // entity type match
+                String name = entity.getType().getUntranslatedName();
                 return name != null && name.equals(_toKill);
             };
 
@@ -106,7 +109,6 @@ public class AttackPlayerOrMobCommand extends Command {
             _onMobDied = EventBus.subscribe(EntityDeathEvent.class, evt -> {
                 Entity diedEntity = evt.entity;
                 if (evt.damageSource == null || evt.damageSource.getAttacker() == null) {
-                    // System.out.println("no damage source attacker");
                     return;
                 }
                 if (evt.damageSource.getAttacker() instanceof PlayerEntity player) {
@@ -114,14 +116,8 @@ public class AttackPlayerOrMobCommand extends Command {
                         if (_shouldAttackPredicate.test(diedEntity)) {
                             // System.out.println("Mob KILLED!");
                             _mobsKilledCount++;
-                        } else {
-                            // System.out.println("predicate failed");
                         }
-                    } else {
-                        // System.out.println("FAIL B: " + player.getName().getString() + " != " + mod.getPlayer().getName().getString());
                     }
-                } else {
-                    // System.out.println("not player instance: " + evt.damageSource.getAttacker().getClass().getSimpleName());
                 }
             });
         }
