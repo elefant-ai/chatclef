@@ -19,11 +19,13 @@ public class SetAIBridgeEnabledCommand extends Command {
         ToggleState toggle = parser.get(ToggleState.class);
         switch (toggle) {
             case ON:
-                Debug.logMessage("AI Bridge disabled! Say goodbye to the player as you won't hear or intercept any of their messages until they turn you back on.");
+                Debug.logMessage(
+                        "Enabling the AI Bridge! You can now hear the player again and will intercept their messages, give them a quick welcome back message.");
                 mod.getAiBridge().setEnabled(true);
                 break;
             case OFF:
-                Debug.logMessage("Enabling the AI Bridge! You can now hear the player again and will intercept their messages, give them a quick welcome back message.");
+                Debug.logMessage(
+                        "AI Bridge disabled! Say goodbye to the player as you won't hear or intercept any of their messages until they turn you back on.");
                 mod.getAiBridge().setEnabled(false);
                 break;
         }
