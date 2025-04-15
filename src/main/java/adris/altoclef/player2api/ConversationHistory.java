@@ -14,7 +14,7 @@ public class ConversationHistory {
 
     public void addHistory(JsonObject text) {
         conversationHistory.add(text);
-        if (conversationHistory.size() > 100) {
+        if (conversationHistory.size() > 64) {
             // 0th index is always system prompt
             conversationHistory.remove(1);
         }
