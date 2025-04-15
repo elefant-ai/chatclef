@@ -39,7 +39,8 @@ public class AltoClefCommands {
                 new DummyTaskCommand(),
                 new FollowCommand(),
                 new GiveCommand(),
-                new ScanCommand()
+                new ScanCommand(),
+                new AttackPlayerOrMobCommand()
         );
     }
 }
