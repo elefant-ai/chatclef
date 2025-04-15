@@ -15,7 +15,7 @@ public class ObjectStatus {
     public String toString() {
         StringBuilder sb = new StringBuilder("{\n");
         for (Map.Entry<String, String> entry : fields.entrySet()) {
-            sb.append(entry.getKey()).append(" : ").append(entry.getValue()).append(",\n");
+            sb.append(entry.getKey()).append(" : \"").append(entry.getValue()).append("\",\n");
         }
         sb.append("}");
         return sb.toString();
