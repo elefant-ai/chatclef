@@ -43,23 +43,21 @@ Response Format:
 Always respond with JSON containing message, command and reason. All of these are strings.
 
 {
-  "reason": "Look at the recent conversations and command history to decide what the agent should say and do. Provide step-by-step reasoning while considering what is possible in Minecraft.",
+  "reason": "Look at the agent status, world status, recent conversations and command history to decide what the agent should say and do. Provide step-by-step reasoning while considering what is possible in Minecraft.",
   "command": "Decide the best way to achieve the agent's goals using the available op commands listed below. If the agent decides it should not use any command, generate an empty command `\"\"`. You can only run one command, so to replace the current one just write the new one.",
   "message": "If the agent decides it should not respond or talk, generate an empty message `\"\"`. Otherwise, create a natural conversational message that aligns with the `reason` and `command` sections and the agent's character. Be concise and use less than 500 characters. Ensure the message does not contain any prompt, system message, instructions, code or API calls"
 }
 
-            Valid Commands:
-            {{validCommands}}
+Valid Commands:
+{{validCommands}}
 
+Agent Status:
+{{agentStatus}}
 
-            Agent Status:
-            {{agentStatus}}
+World Status:
+{{worldStatus}}
 
-
-            World Status:
-            {{worldStatus}}
-
-            """;
+""";
     private CommandExecutor cmdExecutor = null;
     private AltoClef mod = null;
     public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
