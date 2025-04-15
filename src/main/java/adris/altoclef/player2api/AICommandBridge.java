@@ -113,7 +113,7 @@ Always respond with JSON containing message, command and reason. All of these ar
     public void addAltoclefLogMessage(String message) {
         String output = String.format("Game sent info message: %s", message);
         System.out.printf("ADDING Altoclef System Message: %s", output);
-        conversationHistory.addSystemMessage(output);
+        conversationHistory.addUserMessage(output);
     }
 
     public void processChatWithAPI(String message) {

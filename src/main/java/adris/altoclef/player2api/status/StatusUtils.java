@@ -182,4 +182,8 @@ public class StatusUtils {
         return status.toString();
 
     }
+
+    public static String getGamemodeString(AltoClef mod){
+        return mod.getPlayer().isCreative() ? "creative" : "survival";
+    }
 }
