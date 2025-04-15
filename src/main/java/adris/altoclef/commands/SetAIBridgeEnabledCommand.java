@@ -1,11 +1,11 @@
+package adris.altoclef.commands;
+
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
-import adris.altoclef.commandsystem.ItemList;
-import adris.altoclef.tasks.movement.GoToStrongholdPortalTask;
-import adris.altoclef.tasks.movement.LocateDesertTempleTask;
 
 public class SetAIBridgeEnabledCommand extends Command {
 
@@ -19,9 +19,11 @@ public class SetAIBridgeEnabledCommand extends Command {
         ToggleState toggle = parser.get(ToggleState.class);
         switch (toggle) {
             case ON:
+                Debug.logMessage("AI Bridge disabled! Say goodbye to the player as you won't hear or intercept any of their messages until they turn you back on.");
                 mod.getAiBridge().setEnabled(true);
                 break;
             case OFF:
+                Debug.logMessage("Enabling the AI Bridge! You can now hear the player again and will intercept their messages, give them a quick welcome back message.");
                 mod.getAiBridge().setEnabled(false);
                 break;
         }
