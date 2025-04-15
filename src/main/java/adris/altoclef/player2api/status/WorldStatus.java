@@ -12,6 +12,7 @@ public class WorldStatus extends ObjectStatus {
                 .add("nearbyBlocks", StatusUtils.getNearbyBlocksString(mod))
                 .add("nearbyHostiles", StatusUtils.getNearbyHostileMobs(mod))
                 .add("nearbyPlayers", StatusUtils.getNearbyPlayers(mod))
+                .add("difficulty", StatusUtils.getDifficulty(mod))
                 .add("timeInfo", StatusUtils.getTimeString(mod));
     }
 }
