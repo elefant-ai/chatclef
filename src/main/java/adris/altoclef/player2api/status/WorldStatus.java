@@ -10,6 +10,7 @@ public class WorldStatus extends ObjectStatus {
                 .add("dimension", StatusUtils.getDimensionString(mod))
                 .add("spawnPos", StatusUtils.getSpawnPosString(mod))
                 .add("nearbyBlocks", StatusUtils.getNearbyBlocksString(mod))
-                .add("nearbyHostiles", StatusUtils.getNearbyHostileMobs(mod));
+                .add("nearbyHostiles", StatusUtils.getNearbyHostileMobs(mod))
+                .add("nearbyPlayers", StatusUtils.getNearbyPlayers(mod));
     }
 }

@@ -13,6 +13,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.mob.HostileEntity;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.ShieldItem;
@@ -57,7 +58,7 @@ public class StatusUtils {
 
     public static String getSpawnPosString(AltoClef mod) {
         BlockPos spawnPos = mod.getWorld().getSpawnPos();
-        return String.format("\"(%d, %d, %d)\"", spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
+        return String.format("(%d, %d, %d)", spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
     }
 
     public static String getTaskStatusString(AltoClef mod) {
@@ -144,5 +145,26 @@ public class StatusUtils {
 
         return status.toString();
     }
+    public static String getNearbyPlayers(AltoClef mod) {
+        final int radius = 32;
+        List<String> descriptions = new ArrayList<>();
 
+        for (Entity entity : mod.getEntityTracker().getCloseEntities()) {
+            if (entity instanceof PlayerEntity player && entity.distanceTo(mod.getPlayer()) < radius) {
+                String username = player.getName().getString();
+                if( username != mod.getPlayer().getName().getString()){
+                    String position = entity.getPos().floorAlongAxes(EnumSet.allOf(Direction.Axis.class)).toString();
+                    descriptions.add(username + " at " + position);
+                }
+            }
+        }
+
+        if (descriptions.isEmpty()) {
+            return String.format("no nearby users within %d", radius);
+        } else {
+            return "[" + String.join(",", descriptions.stream()
+                    .map(s -> "\"" + s + "\"")
+                    .toArray(String[]::new)) + "]";
+        }
+    }
 }
