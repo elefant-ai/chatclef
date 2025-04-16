@@ -36,10 +36,22 @@ When you play Minecraft, you will use the valid commands to do things in the gam
 If there is something you want to do but can't do it with the commands, you can ask the player to do it.
 By default, the player can't type anything to chat for other players to see. That is because you are enabled. To talk or to silence you, the player can use the `@chatclef off` command. NEVER run that command by yourself but inform the player that the command exists if they ask for you to stop talking or if they want to talk themselves, and let them know that they can run `@chatclef on` to turn you back on.
 
+
 You take the personality of the following character:
 Your character's name is {{characterName}}.
 {{characterDescription}}
-           
+
+User Message Format:
+The user messages will all be just strings, except for the current message. The current message will have extra information, namely it will be a JSON of the form:
+{
+    "userMsg" : "The user message that was just sent"
+    "worldStatus" : "The status of the current game world"
+    "agentStatus" : "The status of you, the agent in the game"
+    "gameDebugMessages" : "The most recent debug messages that the game has printed out. The user cannot see these."
+}
+
+
+
 Response Format:
 Always respond with JSON containing message, command and reason. All of these are strings.
 
@@ -52,17 +64,14 @@ Always respond with JSON containing message, command and reason. All of these ar
 Valid Commands:
 {{validCommands}}
 
-Agent Status:
-{{agentStatus}}
-
-World Status:
-{{worldStatus}}
 
 """;
     private CommandExecutor cmdExecutor = null;
     private AltoClef mod = null;
     
     private boolean _enabled = true;
+
+    private MessageBuffer altoClefMsgBuffer = new MessageBuffer(10);
 
     public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
@@ -78,7 +87,7 @@ World Status:
     private void updateInfo() {
         System.out.println("Updating info");
         Character newCharacter = Player2APIService.getSelectedCharacter();
-        System.out.println(newCharacter);
+        // System.out.println(newCharacter);
         // SkinChanger.changeSkinFromUsername("Dream", SkinType.CLASSIC);
         this.character = newCharacter;
 
@@ -96,14 +105,11 @@ World Status:
         }
         String validCommandsFormatted = commandListBuilder.toString();
 
-        String agentStatus = AgentStatus.fromMod(mod).toString();
-
-        String worldStatus = WorldStatus.fromMod(mod).toString();
 
         String newPrompt = Utils.replacePlaceholders(initialPrompt,
                 Map.of("characterDescription", character.description, "characterName", character.name, "validCommands",
-                        validCommandsFormatted, "agentStatus", agentStatus, "worldStatus", worldStatus));
-        System.out.println("New prompt: " + newPrompt);
+                        validCommandsFormatted));
+        // System.out.println("New prompt: " + newPrompt);
 
         if (this.conversationHistory == null) {
             this.conversationHistory = new ConversationHistory(newPrompt);
@@ -113,9 +119,9 @@ World Status:
     }
 
     public void addAltoclefLogMessage(String message) {
-        String output = String.format("Game sent info message: %s", message);
-        System.out.printf("ADDING Altoclef System Message: %s", output);
-        conversationHistory.addUserMessage(output);
+        // String output = String.format("Game sent info message: %s", message);
+        System.out.printf("ADDING Altoclef System Message: %s", message);
+        altoClefMsgBuffer.addMsg(message);
     }
 
     public void processChatWithAPI(String message) {
@@ -125,7 +131,13 @@ World Status:
                 System.out.println("Sending message " + message + " to LLM");
                 conversationHistory.addUserMessage(message);
 
-                JsonObject response = Player2APIService.completeConversation(conversationHistory);
+                String agentStatus = AgentStatus.fromMod(mod).toString();
+                String worldStatus = WorldStatus.fromMod(mod).toString();
+                String altoClefDebugMsgs = altoClefMsgBuffer.dumpAndGetString(); 
+                ConversationHistory historyWithStatus = conversationHistory.copyThenWrapLatestWithStatus(worldStatus, agentStatus, altoClefDebugMsgs);
+                System.out.printf("History: %s" , historyWithStatus.toString());
+                JsonObject response = Player2APIService.completeConversation(historyWithStatus);
+                
                 String responseAsString = response.toString();
                 System.out.println("LLM Response: " + responseAsString);
 
@@ -157,7 +169,7 @@ World Status:
         System.out.println("Sending Greeting");
         executorService.submit(() -> {
             updateInfo();
-            processChatWithAPI(character.greetingInfo + " Since this is the first message, do not send a command.");
+            processChatWithAPI(character.greetingInfo + " IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, DO NOT SEND A COMMAND!!");
         });
     }
 
