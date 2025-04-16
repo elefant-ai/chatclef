@@ -81,13 +81,12 @@ public class ConversationHistory {
 
         // make deep copy
         for (int i = 1; i < conversationHistory.size() - 1; i++) {
-            copy.addHistory(conversationHistory.get(i).deepCopy());
+            copy.addHistory(Utils.deepCopy(conversationHistory.get(i)));
         }
 
         // add status to latest message
         if (conversationHistory.size() > 1) {
-            JsonObject last = conversationHistory.get(conversationHistory.size() - 1).deepCopy();
-
+            JsonObject last = Utils.deepCopy(conversationHistory.get(conversationHistory.size() - 1));
             if ("user".equals(last.get("role").getAsString())) {
                 String originalContent = last.get("content").getAsString();
                 ObjectStatus msgObj = new ObjectStatus();

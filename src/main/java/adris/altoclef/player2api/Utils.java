@@ -109,5 +109,7 @@ public class Utils {
         }
         return input.split("\\R+"); // \\R is any of: (\n, \r, \r\n)
     }
-
+    public static JsonObject deepCopy(JsonObject original) {
+        return JsonParser.parseString(original.toString()).getAsJsonObject();
+    }
 }
