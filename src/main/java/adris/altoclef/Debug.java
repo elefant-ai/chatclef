@@ -1,6 +1,5 @@
 package adris.altoclef;
 
-import adris.altoclef.player2api.AICommandBridge;
 import adris.altoclef.player2api.Character;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
