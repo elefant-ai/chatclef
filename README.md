@@ -7,7 +7,7 @@
 
 Download the [Player2 app](https://player2.game/), and install Fabric API and this mod in Minecraft to play. You **do not** need to install AltoClef or Baritone separately.
 
-It builds on top of [Player2](https://player2.game), [AltoClef](https://github.com/MiranCZ/altoclef) and [Baritone](https://github.com/cabaletta/baritone), automating Minecraft tasks from start to finish — including beating the game completely solo.
+It automates Minecraft tasks from start to finish, including beating the game completely solo.
 
 👉 [Check releases](https://github.com/elefant-ai/chatclef/releases)
 
@@ -24,7 +24,7 @@ Once installed, the AI will be able to:
 - Beat the game solo
 - Or just mess around with you like a chaotic Minecraft sidekick
 
-It’s completely free, open-source, and constantly being improved.
+It builds on top of [Player2](https://player2.game), [AltoClef](https://github.com/MiranCZ/altoclef) and [Baritone](https://github.com/cabaletta/baritone). It’s completely free, open-source, and constantly being improved.
 
 ---
 
