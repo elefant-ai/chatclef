@@ -295,11 +295,13 @@ public class Settings implements IFailableConfigFile {
     /**
      * If set, will run this command by default when no other commands are running.
      * <p>
+     * For elefant we also consider "" to be "idle" to make things work with other configurations.
+     * Set this to null to actually disable this feature.
      * For example, try setting this to "idle" to make the bot continue surviving/eating/escaping mobs.
      * Or "follow <Your Username>" to follow you when not doing anything.
      * Or "goto <Home base coords>" to return to home base when the bot finishes its work.
      */
-    private String idleCommand = "";
+    private String idleCommand = "idle";
 
 
     /**
@@ -540,7 +542,9 @@ public class Settings implements IFailableConfigFile {
     }
 
     public String getIdleCommand() {
-        return idleCommand;
+        // default to "idle" for users that had the setting at "" before
+        // (they can still disable this by changing the setting to null)
+        return idleCommand == "" ? "idle" : idleCommand;
     }
 
     public String getDeathCommand() {
@@ -548,7 +552,8 @@ public class Settings implements IFailableConfigFile {
     }
 
     public boolean shouldRunIdleCommandWhenNotActive() {
-        return idleCommand != null && !idleCommand.isBlank();
+        String command = getIdleCommand();
+        return command != null && !command.isBlank();
     }
 
     public boolean shouldAutoMLGBucket() {

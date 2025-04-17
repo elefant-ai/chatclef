@@ -193,7 +193,7 @@ public class AltoClef implements ModInitializer {
                 evt.cancel();
                 getCommandExecutor().execute(line);
             }
-            else{
+            else if (this.aiBridge.getEnabled()) {
                 evt.cancel();
                 this.aiBridge.processChatWithAPI(line);
             }
