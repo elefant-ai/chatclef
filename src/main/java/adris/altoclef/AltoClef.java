@@ -24,19 +24,24 @@ import adris.altoclef.ui.AltoClefTickChart;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
+import adris.altoclef.ui.ChatclefToggleButton;
 import adris.altoclef.util.helpers.InputHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import org.lwjgl.glfw.GLFW;
+
+// import adris.altoclef.ui.ChatclefToggleButton;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -253,12 +258,27 @@ public class AltoClef implements ModInitializer {
             inGame = true;
             onLogin();
         }
+
+        // Chatclef UI
+        if (ChatclefToggleButton.tick()) {
+            setChatClefEnabled(!getAiBridge().getEnabled());
+        }
     }
 
     /// GETTERS AND SETTERS
 
     public AICommandBridge getAiBridge(){
         return this.aiBridge;
+    }
+
+    public void setChatClefEnabled(boolean enabled) {
+        getAiBridge().setEnabled(enabled);
+        if (!enabled) {
+            // actually stop tasks
+            getUserTaskChain().cancel(this);
+            // also disable idle, but we can re-enable it as soon as any task runs
+            getTaskRunner().disable();
+        }
     }
 
 
@@ -271,6 +291,8 @@ public class AltoClef implements ModInitializer {
         if (settings.shouldShowDebugTickMs()) {
             altoClefTickChart.render(this, context, 1, context.getScaledWindowWidth() / 2 - 124);
         }
+
+        ChatclefToggleButton.render(context, context.getMatrices(), getAiBridge().getEnabled());
     }
     private void onLogin() {
         // Sends greeting

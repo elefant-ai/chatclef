@@ -21,14 +21,15 @@ public class SetAIBridgeEnabledCommand extends Command {
             case ON:
                 Debug.logMessage(
                         "Enabling the AI Bridge! You can now hear the player again and will intercept their messages, give them a quick welcome back message.");
-                mod.getAiBridge().setEnabled(true);
+                mod.setChatClefEnabled(true);
                 break;
             case OFF:
                 Debug.logMessage(
                         "AI Bridge disabled! Say goodbye to the player as you won't hear or intercept any of their messages until they turn you back on.");
-                mod.getAiBridge().setEnabled(false);
+                mod.setChatClefEnabled(false);
                 break;
         }
+        finish();
     }
 
     public enum ToggleState {
