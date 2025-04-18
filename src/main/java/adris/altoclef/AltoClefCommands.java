@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+import adris.altoclef.commands.AttackPlayerOrMobCommand;
 import adris.altoclef.commands.DepositCommand;
 import adris.altoclef.commands.EquipCommand;
 import adris.altoclef.commands.FollowCommand;
