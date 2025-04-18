@@ -108,17 +108,27 @@ public class AttackPlayerOrMobCommand extends Command {
             _forceCollectTimer.reset();
             _onMobDied = EventBus.subscribe(EntityDeathEvent.class, evt -> {
                 Entity diedEntity = evt.entity;
-                if (evt.damageSource == null || evt.damageSource.getAttacker() == null) {
-                    return;
+                if (_shouldAttackPredicate.test(diedEntity)) {
+                    _mobsKilledCount++;
                 }
-                if (evt.damageSource.getAttacker() instanceof PlayerEntity player) {
-                    if (player.getName().getString().equals(mod.getPlayer().getName().getString())) {
-                        if (_shouldAttackPredicate.test(diedEntity)) {
-                            // System.out.println("Mob KILLED!");
-                            _mobsKilledCount++;
-                        }
-                    }
-                }
+
+                // TODO: This only works on client side
+                // Entity diedEntity = evt.entity;
+                // System.out.println("ASDF 0");
+                // if (evt.damageSource == null || evt.damageSource.getAttacker() == null) {
+                //     System.out.println("ASDF A");
+                //     return;
+                // }
+                // if (evt.damageSource.getAttacker() instanceof PlayerEntity player) {
+                //     System.out.println("ASDF B");
+                //     if (player.getName().getString().equals(mod.getPlayer().getName().getString())) {
+                //         System.out.println("ASDF C");
+                //         if (_shouldAttackPredicate.test(diedEntity)) {
+                //             System.out.println("Mob KILLED!");
+                //             _mobsKilledCount++;
+                //         }
+                //     }
+                // }
             });
         }
 
