@@ -143,6 +143,13 @@ public class EntityTracker extends Tracker {
         return Optional.ofNullable(closestEntity);
     }
 
+    private Class[] parsePossiblyNullEntityTypes(Class... entityTypes) {
+        if (entityTypes == null) {
+            return entityMap.keySet().toArray(Class[]::new);
+        }
+        return entityTypes;
+    }
+
     public Optional<Entity> getClosestEntity(Class... entityTypes) {
         return getClosestEntity(mod.getPlayer().getPos(), entityTypes);
     }
@@ -156,6 +163,8 @@ public class EntityTracker extends Tracker {
     }
 
     public Optional<Entity> getClosestEntity(Vec3d position, Predicate<Entity> acceptPredicate, Class... entityTypes) {
+        entityTypes = parsePossiblyNullEntityTypes(entityTypes);
+
         Entity closestEntity = null;
         double minCost = Float.POSITIVE_INFINITY;
         for (Class toFind : entityTypes) {
@@ -209,6 +218,7 @@ public class EntityTracker extends Tracker {
 
     public boolean entityFound(Predicate<Entity> shouldAccept, Class... types) {
         ensureUpdated();
+        types = parsePossiblyNullEntityTypes(types);
         for (Class type : types) {
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                 for (Entity entity : entityMap.getOrDefault(type, Collections.emptyList())) {

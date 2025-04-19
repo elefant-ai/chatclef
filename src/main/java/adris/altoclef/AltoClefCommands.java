@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+import adris.altoclef.commands.AttackPlayerOrMobCommand;
 import adris.altoclef.commands.DepositCommand;
 import adris.altoclef.commands.EquipCommand;
 import adris.altoclef.commands.FollowCommand;
@@ -49,6 +50,7 @@ public class AltoClefCommands {
                 new FollowCommand(),
                 new GiveCommand(),
                 new ScanCommand(),
+                new AttackPlayerOrMobCommand(),
                 new SetAIBridgeEnabledCommand()
         );
     }
