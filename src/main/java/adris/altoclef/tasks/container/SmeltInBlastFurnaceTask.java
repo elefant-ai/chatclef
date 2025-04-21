@@ -195,7 +195,7 @@ public class SmeltInBlastFurnaceTask extends ResourceTask {
                     - totalFuelInBlastFurnace;
 
             // We don't have enough materials...
-            if (mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches()) < materialsNeeded) {
+            if (mod.getItemStorage().getItemCount(materialTarget.getMatches()) < materialsNeeded) {
                 setDebugState("Getting Materials");
                 return getMaterialTask(_target.getMaterial());
             }
