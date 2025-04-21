@@ -1,7 +1,5 @@
 package adris.altoclef.commands;
 
-import java.util.ArrayList;
-import java.util.List;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
@@ -10,6 +8,7 @@ import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.commandsystem.ItemList;
+import adris.altoclef.player2api.AgentCommandUtils;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 
@@ -22,15 +21,8 @@ public class GetCommand extends Command {
     private void getItems(AltoClef mod, ItemTarget... items) {
         Task targetTask;
 
-        List<ItemTarget> resultTargets = new ArrayList<>();
-        for (ItemTarget target : items) {
-            int count = target.getTargetCount();
-            // append to current count so this is workable with the agent
-            count += AltoClef.getInstance().getItemStorage().getItemCountInventoryOnly(target.getMatches());
-
-            resultTargets.add(new ItemTarget(target, count));
-        }
-        items = resultTargets.toArray(new ItemTarget[0]);
+        // agent integration
+        items = AgentCommandUtils.addPresentItemsToTargets(items);
 
         if (items == null || items.length == 0) {
             mod.log("You must specify at least one item!");
