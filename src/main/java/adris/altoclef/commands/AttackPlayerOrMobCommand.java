@@ -90,7 +90,7 @@ public class AttackPlayerOrMobCommand extends Command {
                 // Attack players possibly
                 if (entity instanceof PlayerEntity) {
                     String playerName = entity.getName().getString();
-                    if (playerName != null && playerName.equals(_toKill)) {
+                    if (playerName != null && playerName.equalsIgnoreCase(_toKill)) {
                         return true;
                     }
                 }
