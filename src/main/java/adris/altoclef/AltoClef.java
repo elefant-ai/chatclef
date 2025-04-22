@@ -219,7 +219,19 @@ public class AltoClef implements ModInitializer {
 
         // External mod initialization
         runEnqueuedPostInits();
-}
+    }
+
+    public void stop() {
+        getUserTaskChain().cancel(this);
+        if (taskRunner.getCurrentTaskChain() != null) {
+            taskRunner.getCurrentTaskChain().stop();
+        }
+        // also disable idle, but we can re-enable it as soon as any task runs
+        getTaskRunner().disable();
+        // Extra reset. Sometimes baritone is laggy and doesn't properly reset our press
+        getClientBaritone().getPathingBehavior().forceCancel();
+        getClientBaritone().getInputOverrideHandler().clearAllKeys();
+    }
 
     // Client tick
 
@@ -230,10 +242,7 @@ public class AltoClef implements ModInitializer {
 
         // Cancel shortcut
         if (InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
-            userTaskChain.cancel(this);
-            if (taskRunner.getCurrentTaskChain() != null) {
-                taskRunner.getCurrentTaskChain().stop();
-            }
+            stop();
         }
 
         // Call heartbeat every 60 seconds

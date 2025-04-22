@@ -12,9 +12,7 @@ public class StopCommand extends Command {
 
     @Override
     protected void call(AltoClef mod, ArgParser parser) {
-        mod.getUserTaskChain().cancel(mod);
-        // also disable idle, but we can re-enable it as soon as any task runs
-        mod.getTaskRunner().disable();
+        mod.stop();
         finish();
     }
 }
