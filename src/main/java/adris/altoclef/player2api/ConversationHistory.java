@@ -1,4 +1,4 @@
-package adris.altoclef.player2api;
+package adris.altoclef.player2api.LLM.State;
 
 import com.google.gson.JsonObject;
 

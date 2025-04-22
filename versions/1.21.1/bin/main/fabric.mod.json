@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "altoclef",
+  "version": "${version}",
+  "name": "Alto Clef",
+  "description": "Plays Block Game",
+  "authors": [
+    "TacoTechnica",
+    "James Green",
+    "Marvion Kirito",
+    "MiranCZ"
+  ],
+  "contact": {
+    "homepage": "https://github.com/MiranCZ/altoclef",
+    "sources": "https://github.com/MiranCZ/altoclef"
+  },
+  "license": "MIT",
+  "icon": "assets/altoclef/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "adris.altoclef.AltoClef"
+    ]
+  },
+  "mixins": [
+    "altoclef.mixins.json"
+  ]
+}
