@@ -1,5 +1,8 @@
 package adris.altoclef.commands;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 import adris.altoclef.AltoClef;
@@ -15,6 +18,7 @@ import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.time.TimerGame;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 
@@ -47,6 +51,8 @@ public class AttackPlayerOrMobCommand extends Command {
         private Subscription<EntityDeathEvent> _onMobDied;
 
         private Predicate<Entity> _shouldAttackPredicate;
+
+        private Set<Entity> _trackedDeadEntities = new HashSet<>();
 
         private static ItemTarget[] drops = new ItemTarget[]{
             new ItemTarget("rotten_flesh", 9999),
@@ -106,30 +112,26 @@ public class AttackPlayerOrMobCommand extends Command {
         @Override
         protected void onResourceStart(AltoClef mod) {
             _forceCollectTimer.reset();
+            // TODO: Also consider if the target player entity is NOT alive, in the event we're dealing with players
+
             _onMobDied = EventBus.subscribe(EntityDeathEvent.class, evt -> {
                 Entity diedEntity = evt.entity;
-                if (_shouldAttackPredicate.test(diedEntity)) {
-                    _mobsKilledCount++;
+
+                // don't double count
+                if (_trackedDeadEntities.contains(diedEntity)) {
+                    return;
                 }
 
-                // TODO: This only works on client side
-                // Entity diedEntity = evt.entity;
-                // System.out.println("ASDF 0");
-                // if (evt.damageSource == null || evt.damageSource.getAttacker() == null) {
-                //     System.out.println("ASDF A");
-                //     return;
-                // }
-                // if (evt.damageSource.getAttacker() instanceof PlayerEntity player) {
-                //     System.out.println("ASDF B");
-                //     if (player.getName().getString().equals(mod.getPlayer().getName().getString())) {
-                //         System.out.println("ASDF C");
-                //         if (_shouldAttackPredicate.test(diedEntity)) {
-                //             System.out.println("Mob KILLED!");
-                //             _mobsKilledCount++;
-                //         }
-                //     }
-                // }
+                if (_shouldAttackPredicate.test(diedEntity)) {
+                    markEntityDead(diedEntity);
+                }
             });
+        }
+
+        private void markEntityDead(Entity entity) {
+            // newly dead!
+            _trackedDeadEntities.add(entity);
+            _mobsKilledCount++;
         }
 
         @Override
@@ -140,15 +142,34 @@ public class AttackPlayerOrMobCommand extends Command {
 
         @Override
         protected Task onResourceTick(AltoClef mod) {
+
+            // If our target is a player, consider dead players that match to add to our counter
+            for (Entity entity : MinecraftClient.getInstance().world.getEntities()) {
+                if (_trackedDeadEntities.contains(entity)) {
+                    // don't double count
+                    continue;
+                }
+
+                if (_shouldAttackPredicate.test(entity)) {
+                    if (!entity.isAlive()) {
+                        markEntityDead(entity);
+                    }
+                }
+            }
+            // Clear remaining not attack predicate entitites
+            _trackedDeadEntities.removeIf(entity -> entity.isAlive());
+
             if (_mobsKilledCount < _mobKillTargetCount) {
                 _forceCollectTimer.reset();
             }
+
             return _killTask;
         }
 
         @Override
         protected void onResourceStop(AltoClef mod, Task interruptTask) {
             EventBus.unsubscribe(_onMobDied);
+            _trackedDeadEntities.clear();
         }
     
         @Override
