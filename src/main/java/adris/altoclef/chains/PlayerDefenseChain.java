@@ -32,9 +32,9 @@ public class PlayerDefenseChain extends SingleTaskChain {
 
     private void onPlayerDamage(DamageSource source) {
         // TODO: Process and target player
-        Entity damagedBy = source.getSource();
+        Entity damagedBy = source.getAttacker();
         if (damagedBy == null) {
-            System.out.println("ASDF null");
+            return;
         }
         if (damagedBy instanceof PlayerEntity player) {
             String offendingName = player.getName().getString();
@@ -47,6 +47,10 @@ public class PlayerDefenseChain extends SingleTaskChain {
             if (target.forgetInstigationTimer.elapsed()) {
                 target.timesHit = 0;
             }
+            if (target.forgetAttackTimer.elapsed()) {
+                target.attacking = false;
+            }
+
             target.forgetInstigationTimer.reset();
             if (!target.attacking) {
                 target.timesHit++;
@@ -55,6 +59,7 @@ public class PlayerDefenseChain extends SingleTaskChain {
                     System.out.println("Too many attacks from another player! Retaliating attacks against offending player: " + offendingName);
                     target.attacking = true;
                     target.forgetAttackTimer.reset();
+                    target.timesHit = 0;
                     // Always attack the most recently attacked entity, to keep things simple
                     _currentlyAttackingPlayer = offendingName;
                 }
@@ -84,9 +89,8 @@ public class PlayerDefenseChain extends SingleTaskChain {
 
             PlayerEntity potentialPlayer = AltoClef.getInstance().getEntityTracker().getPlayerEntity(potentialAttacker).orElse(null);
 
-            if (potentialPlayer != null && (!potentialPlayer.isAlive() || _damageTargets.get(potentialAttacker).forgetAttackTimer.elapsed())) {
-                System.out.println("Either forgot or killed player: " + potentialPlayer.getName().getString() + " (no longer attacking)");
-                System.out.println("test: " + potentialPlayer.isAlive() + " or " + _damageTargets.get(potentialAttacker).forgetAttackTimer.elapsed());
+            if (potentialPlayer == null || (!potentialPlayer.isAlive() || _damageTargets.get(potentialAttacker).forgetAttackTimer.elapsed())) {
+                System.out.println("Either forgot or killed player: " + potentialAttacker + " (no longer attacking)");
                 _damageTargets.remove(potentialAttacker);
                 if (potentialAttacker == _currentlyAttackingPlayer) {
                     _currentlyAttackingPlayer = null;

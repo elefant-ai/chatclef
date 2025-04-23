@@ -1,7 +1,8 @@
 package adris.altoclef.mixins;
 
-import net.minecraft.entity.damage.DamageSource;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 
@@ -13,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ClientPlayerEntity.class)
+@Mixin(PlayerEntity.class)
 public class PlayerDamageMixin {
     
     @Inject(
@@ -21,7 +22,11 @@ public class PlayerDamageMixin {
         at = @At("HEAD")
     )
     public void getDamaged(DamageSource source, float amount, CallbackInfoReturnable<Boolean> ci) {
-        System.out.println("WE GOT DAMAGED!");
+        PlayerEntity p = (PlayerEntity) ((Object)this);
+        if ( !(p.getName().equals(MinecraftClient.getInstance().player.getName())) ) {
+            // must be the client player
+            return;
+        }
         EventBus.publish(new PlayerDamageEvent(source, amount));
     }
 }
