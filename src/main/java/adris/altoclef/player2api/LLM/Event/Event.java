@@ -1,6 +1,8 @@
 package adris.altoclef.player2api.LLM.Event;
 
-import java.util.Optional;
+import java.util.List;
+
+import adris.altoclef.player2api.LLM.State.LLMState;
 
 public abstract class Event {
     protected final boolean shouldSave;
@@ -8,5 +10,5 @@ public abstract class Event {
         this.shouldSave = shouldSave;
     }
 
-    public abstract Optional<Event[]> handle();
+    public abstract List<Event> handle(LLMState state);
 }

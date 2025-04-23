@@ -1,7 +1,10 @@
 package adris.altoclef;
 
+import java.util.Optional;
+
 import adris.altoclef.player2api.AICommandBridge;
 import adris.altoclef.player2api.Character;
+import adris.altoclef.player2api.LLM.State.CharacterState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 
@@ -51,7 +54,7 @@ public class Debug {
 
     }
 
-    public static void logCharacterMessage(String message, Character character){
+    public static void logCharacterMessage(String message, CharacterState character){
         message = String.format("\u00A71\u00A7l\u00A7o<%s>\u00A7r %s", character.name, message);
         if(MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null){
             MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);

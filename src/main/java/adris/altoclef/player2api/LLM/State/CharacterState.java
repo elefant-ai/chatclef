@@ -1,11 +1,12 @@
 package adris.altoclef.player2api.LLM.State;
 
 import java.util.Arrays;
-import java.util.Optional;
+import java.util.List;
 
+import adris.altoclef.player2api.LLM.Event.CharacterChangeEvent;
 import adris.altoclef.player2api.LLM.Event.Event;
 
-public class CharacterState implements AtomicState{
+public class CharacterState extends AtomicState<CharacterState>{
     public final String name;
     public final String greetingInfo;
     public final String description;
@@ -22,15 +23,16 @@ public class CharacterState implements AtomicState{
     @Override
     public String getSummary() {
         return String.format(
-                "Character{name='%s', greeting='%s', voiceIds=%s}",
+                "{name='%s',\ngreeting='%s',\nvoiceIds=%s}",
                 name,
                 greetingInfo,
                 Arrays.toString(voiceIds));
     } 
 
     @Override
-    public Optional<Event> onChange(AtomicState oldState, AtomicState newState) {
-        return Optional.empty();
+    public List<Event> onChange(CharacterState oldState, CharacterState newState) {
+        CharacterChangeEvent a = new CharacterChangeEvent(oldState, newState);
+        return (List.of(a));
     }
     
 }

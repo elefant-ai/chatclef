@@ -1,9 +1,12 @@
-package  adris.altoclef.player2api.LLM.State;
+package adris.altoclef.player2api.LLM.State;
+
+import java.util.List;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.player2api.LLM.Event.Event;
 import net.minecraft.client.network.ClientPlayerEntity;
 
-public class AgentState {
+public class AgentState extends AtomicState<AgentState> {
     private final float health;
     private final float food;
     private final float saturation;
@@ -14,8 +17,8 @@ public class AgentState {
     private final String gamemode;
 
     public AgentState(float health, float food, float saturation,
-                       String inventory, String taskStatus, String oxygenLevel,
-                       String armor, String gamemode) {
+            String inventory, String taskStatus, String oxygenLevel,
+            String armor, String gamemode) {
         this.health = health;
         this.food = food;
         this.saturation = saturation;
@@ -36,23 +39,27 @@ public class AgentState {
                 StateUtils.getTaskStatusString(mod),
                 StateUtils.getOxygenString(mod),
                 StateUtils.getEquippedArmorStatusString(mod),
-                StateUtils.getGamemodeString(mod)
-        );
+                StateUtils.getGamemodeString(mod));
     }
 
     @Override
-    public String toString() {
+    public String getSummary() {
         return String.format("""
-            {
-              health: %.2f,
-              food: %.2f,
-              saturation: %.2f,
-              inventory: %s,
-              taskStatus: "%s",
-              oxygenLevel: "%s",
-              armor: %s,
-              gamemode: "%s"
-            }
-        """, health, food, saturation, inventory, taskStatus, oxygenLevel, armor, gamemode);
+                {
+                    health: %.2f,
+                    food: %.2f,
+                    saturation: %.2f,
+                    inventory: %s,
+                    taskStatus: "%s",
+                    oxygenLevel: "%s",
+                    armor: %s,
+                    gamemode: "%s"
+                }
+                """, health, food, saturation, inventory, taskStatus, oxygenLevel, armor, gamemode);
+    }
+
+    @Override
+    public List<Event> onChange(AgentState oldState, AgentState newState) {
+        return List.of();
     }
 }

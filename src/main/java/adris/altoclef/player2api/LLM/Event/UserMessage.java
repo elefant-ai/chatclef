@@ -1,5 +1,6 @@
 package adris.altoclef.player2api.LLM.Event;
 
+import java.util.List;
 import java.util.Optional;
 
 public class UserMessage extends Event {
@@ -13,8 +14,8 @@ public class UserMessage extends Event {
     }
 
     @Override
-    public Optional<Event[]> handle() {
+    public List<Event> handle() {
         // TODO: use service to find and send assistant message
-        return Optional.empty();
+        return List.of();
     }
 }

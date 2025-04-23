@@ -1,6 +1,5 @@
 package adris.altoclef;
 
-
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
 import adris.altoclef.commands.BlockScanner;
@@ -15,6 +14,7 @@ import adris.altoclef.multiversion.RenderLayerVer;
 import adris.altoclef.multiversion.versionedfields.Blocks;
 import adris.altoclef.player2api.AICommandBridge;
 import adris.altoclef.player2api.Character;
+import adris.altoclef.player2api.LLM.State.CharacterState;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.*;
@@ -30,12 +30,15 @@ import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import net.minecraft.server.MinecraftServer;
+
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -89,13 +92,14 @@ public class AltoClef implements ModInitializer {
 
     private static AltoClef instance;
 
-
-
     private boolean inGame = false;
+
+    public static MinecraftServer server;
 
     // Are we in game (playing in a server/world)
     public static boolean inGame() {
-        return MinecraftClient.getInstance().player != null && MinecraftClient.getInstance().getNetworkHandler() != null;
+        return MinecraftClient.getInstance().player != null
+                && MinecraftClient.getInstance().getNetworkHandler() != null;
     }
 
     /**
@@ -110,17 +114,20 @@ public class AltoClef implements ModInitializer {
         // This code runs as soon as Minecraft is in a mod-load-ready state.
         // However, some things (like resources) may still be uninitialized.
         // As such, nothing will be loaded here but basic initialization.
-        EventBus.subscribe( TitleScreenEntryEvent.class, evt -> onInitializeLoad());
+        EventBus.subscribe(TitleScreenEntryEvent.class, evt -> onInitializeLoad());
         if (instance != null) {
             throw new IllegalStateException("AltoClef already loaded!");
         }
         instance = this;
-//        EventBus.subscribe(ClientLoginEvent.class, evt -> {
-//           System.out.println("LOGGED IN");
-//        });
+        // EventBus.subscribe(ClientLoginEvent.class, evt -> {
+        // System.out.println("LOGGED IN");
+        // });
+        ServerLifecycleEvents.SERVER_STARTED.register(s -> {
+            server = s;
+            System.out.println("[AltoClef] Set server");
+        });
 
     }
-
 
     public void onInitializeLoad() {
         // This code should be run after Minecraft loads everything else in.
@@ -173,11 +180,13 @@ public class AltoClef implements ModInitializer {
             settings = newSettings;
             // Baritone's `acceptableThrowawayItems` should match our own.
             List<Item> baritoneCanPlace = Arrays.stream(settings.getThrowawayItems(true))
-                    .filter(item -> item != Items.SOUL_SAND && item != Items.MAGMA_BLOCK && item != Items.SAND && item
-                            != Items.GRAVEL).toList();
+                    .filter(item -> item != Items.SOUL_SAND && item != Items.MAGMA_BLOCK && item != Items.SAND
+                            && item != Items.GRAVEL)
+                    .toList();
             getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(baritoneCanPlace);
             // If we should run an idle command...
-            if ((!getUserTaskChain().isActive() || getUserTaskChain().isRunningIdleTask()) && getModSettings().shouldRunIdleCommandWhenNotActive()) {
+            if ((!getUserTaskChain().isActive() || getUserTaskChain().isRunningIdleTask())
+                    && getModSettings().shouldRunIdleCommandWhenNotActive()) {
                 getUserTaskChain().signalNextTaskToBeIdleTask();
                 getCommandExecutor().executeWithPrefix(getModSettings().getIdleCommand());
             }
@@ -192,8 +201,7 @@ public class AltoClef implements ModInitializer {
             if (getCommandExecutor().isClientCommand(line)) {
                 evt.cancel();
                 getCommandExecutor().execute(line);
-            }
-            else{
+            } else {
                 evt.cancel();
                 this.aiBridge.processChatWithAPI(line);
             }
@@ -203,7 +211,7 @@ public class AltoClef implements ModInitializer {
         EventBus.subscribe(ClientTickEvent.class, evt -> {
             long nanos = System.nanoTime();
             onClientTick();
-            altoClefTickChart.pushTickNanos(System.nanoTime()-nanos);
+            altoClefTickChart.pushTickNanos(System.nanoTime() - nanos);
         });
 
         // Render
@@ -214,7 +222,7 @@ public class AltoClef implements ModInitializer {
 
         // External mod initialization
         runEnqueuedPostInits();
-}
+    }
 
     // Client tick
 
@@ -249,7 +257,7 @@ public class AltoClef implements ModInitializer {
         messageSender.tick();
 
         inputControls.onTickPost();
-        if(!inGame && AltoClef.inGame() ){
+        if (!inGame && AltoClef.inGame()) {
             inGame = true;
             onLogin();
         }
@@ -257,10 +265,9 @@ public class AltoClef implements ModInitializer {
 
     /// GETTERS AND SETTERS
 
-    public AICommandBridge getAiBridge(){
+    public AICommandBridge getAiBridge() {
         return this.aiBridge;
     }
-
 
     private void onClientRenderOverlay(DrawContextWrapper context) {
         context.setRenderLayer(RenderLayerVer.getGuiOverlay());
@@ -272,10 +279,12 @@ public class AltoClef implements ModInitializer {
             altoClefTickChart.render(this, context, 1, context.getScaledWindowWidth() / 2 - 124);
         }
     }
+
     private void onLogin() {
         // Sends greeting
         this.aiBridge.sendGreeting();
     }
+
     private void initializeBaritoneSettings() {
         getExtraBaritoneSettings().canWalkOnEndPortal(false);
         getClientBaritoneSettings().freeLook.value = false;
@@ -287,7 +296,8 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().allowParkourPlace.value = false;
         getClientBaritoneSettings().allowDiagonalDescend.value = false;
         getClientBaritoneSettings().allowDiagonalAscend.value = false;
-        getClientBaritoneSettings().blocksToAvoid.value = new LinkedList<>(List.of(Blocks.FLOWERING_AZALEA, Blocks.AZALEA,
+        getClientBaritoneSettings().blocksToAvoid.value = new LinkedList<>(List.of(Blocks.FLOWERING_AZALEA,
+                Blocks.AZALEA,
                 Blocks.POWDER_SNOW, Blocks.BIG_DRIPLEAF, Blocks.BIG_DRIPLEAF_STEM, Blocks.CAVE_VINES,
                 Blocks.CAVE_VINES_PLANT, Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.SWEET_BERRY_BUSH,
                 Blocks.WARPED_ROOTS, Blocks.VINE, Blocks.SHORT_GRASS, Blocks.FERN, Blocks.TALL_GRASS, Blocks.LARGE_FERN,
@@ -313,7 +323,8 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().randomLooking.value = 0.0;
         getClientBaritoneSettings().randomLooking113.value = 0.0;
 
-        // Give baritone more time to calculate paths. Sometimes they can be really far away.
+        // Give baritone more time to calculate paths. Sometimes they can be really far
+        // away.
         // Was: 2000L
         getClientBaritoneSettings().failureTimeoutMS.reset();
         // Was: 5000L
@@ -325,7 +336,8 @@ public class AltoClef implements ModInitializer {
     // List all command sources here.
     private void initializeCommands() {
         try {
-            // This creates the commands. If you want any more commands feel free to initialize new command lists.
+            // This creates the commands. If you want any more commands feel free to
+            // initialize new command lists.
             AltoClefCommands.init();
         } catch (Exception e) {
             e.printStackTrace();
@@ -356,7 +368,8 @@ public class AltoClef implements ModInitializer {
     }
 
     /**
-     * Controls bot behaviours, like whether to temporarily "protect" certain blocks or items
+     * Controls bot behaviours, like whether to temporarily "protect" certain blocks
+     * or items
      */
     public BotBehaviour getBehaviour() {
         return botBehaviour;
@@ -496,14 +509,16 @@ public class AltoClef implements ModInitializer {
     }
 
     /**
-     * Minecraft client interaction controller access (could just be static honestly)
+     * Minecraft client interaction controller access (could just be static
+     * honestly)
      */
     public ClientPlayerInteractionManager getController() {
         return MinecraftClient.getInstance().interactionManager;
     }
 
     /**
-     * Extra controls not present in ClientPlayerInteractionManager. This REALLY should be made static or combined with something else.
+     * Extra controls not present in ClientPlayerInteractionManager. This REALLY
+     * should be made static or combined with something else.
      */
     public PlayerExtraController getControllerExtras() {
         return extraController;
@@ -570,8 +585,7 @@ public class AltoClef implements ModInitializer {
         Debug.logMessage(message);
     }
 
-
-    public void logCharacterMessage(String message, Character character){
+    public void logCharacterMessage(String message, CharacterState character) {
         Debug.logCharacterMessage(message, character);
     }
 
@@ -580,7 +594,8 @@ public class AltoClef implements ModInitializer {
     }
 
     /**
-     * Logs a warning to the console and also alerts any player using the bot as a butler.
+     * Logs a warning to the console and also alerts any player using the bot as a
+     * butler.
      */
     public void logWarning(String message, MessagePriority priority) {
         Debug.logWarning(message);

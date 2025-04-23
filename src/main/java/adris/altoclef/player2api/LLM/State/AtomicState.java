@@ -1,14 +1,15 @@
 package adris.altoclef.player2api.LLM.State;
 
+import java.util.List;
 import java.util.Optional;
 
 import adris.altoclef.player2api.LLM.Event.Event;
 
 
-public interface AtomicState {
+public abstract class AtomicState<T extends AtomicState<T>>  {
     // Used for current state:
-    String getSummary();
+    public abstract String getSummary();
 
     // If this state changes, should we have an event?     
-    Optional<Event> onChange(AtomicState oldState, AtomicState newState);
+    public abstract List<Event> onChange(T oldState, T newState);
 }
