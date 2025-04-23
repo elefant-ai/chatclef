@@ -150,6 +150,7 @@ public class AltoClef implements ModInitializer {
         new PreEquipItemChain(taskRunner);
         new WorldSurvivalChain(taskRunner);
         foodChain = new FoodChain(taskRunner);
+        new PlayerDefenseChain(taskRunner);
 
         // Trackers
         storageTracker = new ItemStorageTracker(this, trackerManager, container -> containerSubTracker = container);
