@@ -14,7 +14,6 @@
     "DeathScreenAccessor",
     "EntityAccessor",
     "GameOverlayMixin",
-    "PlayerDamageMixin",
     "MiningToolItemAccessor",
     "MovementHelperMixin",
     "PersistentProjectileEntityAccessor",
@@ -34,7 +33,9 @@
     "LoadChunkMixin",
     "MixinLocalPlayer",
     "PlayerCollidesWithEntityMixin",
-    "SimpleOptionMixin"
+    "PlayerDamageMixin",
+    "SimpleOptionMixin",
+    "EntityAnimationSwungMixin"
   ],
   "injectors": {
     "defaultRequire": 1

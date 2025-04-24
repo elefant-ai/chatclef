@@ -523,6 +523,22 @@ public interface LookHelper {
         return mod.getClientBaritone().getPlayerContext().isLookingAt(pos);
     }
 
+    static boolean isLookingAt(Entity entity, Vec3d toLookAt, double angleThreshold) {
+        Vec3d head = entity.getPos().add(new Vec3d(0, entity.getStandingEyeHeight(), 0));
+        Rotation rotation = new Rotation(entity.getYaw(), entity.getPitch());
+
+        Vec3d look = RotationUtils.calcLookDirectionFromRotation(rotation);
+
+        Vec3d targetLook = toLookAt.subtract(head).normalize();
+
+        double dot = look.dotProduct(targetLook);
+        double angle = Math.toDegrees(Math.acos(dot));
+
+        // System.out.println("ANGLE: " + angle);
+
+        return Math.abs(angle) < angleThreshold;
+    }
+
     /**
      * Updates the player's look direction and rotation.
      *

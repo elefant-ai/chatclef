@@ -8,34 +8,101 @@ import java.util.Optional;
 import adris.altoclef.AltoClef;
 import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.events.PlayerDamageEvent;
+import adris.altoclef.eventbus.events.EntitySwungEvent;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.time.TimerGame;
+import adris.altoclef.tasks.entity.KillPlayerTask;
+import adris.altoclef.util.helpers.LookHelper;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
-import adris.altoclef.tasks.entity.KillPlayerTask;
+import net.minecraft.util.math.Vec3d;
 
-// TODO: Get attack events, if another player then consider attacking them for a period of time
+import net.minecraft.network.packet.s2c.play.EntityAnimationS2CPacket;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+
 public class PlayerDefenseChain extends SingleTaskChain {
 
     private Map<String, DamageTarget> _damageTargets = new HashMap<>();
+
+    // TODO: These happen out of order from damage. consider them after the fact.
+    // entities that swung recently mapped by their entityId
+    private Map<Integer, TimerGame> _recentlySwung = new HashMap<>();
+    private TimerGame _recentlyDamagedUnknown = new TimerGame(0.3);
 
     private String _currentlyAttackingPlayer = null;
 
     // TODO: CONFIG
     private static int HITS_BEFORE_RETALIATION = 3;
+    private static double SWING_TIMEOUT = 0.4;
 
     public PlayerDefenseChain(TaskRunner runner) {
         super(runner);
-        EventBus.subscribe(PlayerDamageEvent.class, evt -> onPlayerDamage(evt.source));
+        EventBus.subscribe(PlayerDamageEvent.class, evt -> onPlayerDamage(evt.source.getAttacker()));
+        EventBus.subscribe(EntitySwungEvent.class, evt -> onEntitySwung(evt.entity));
     }
 
-    private void onPlayerDamage(DamageSource source) {
-        // TODO: Process and target player
-        Entity damagedBy = source.getAttacker();
-        if (damagedBy == null) {
+    private void processMaybeDamaged() {
+        if (_recentlyDamagedUnknown == null || _recentlyDamagedUnknown.elapsed()) {
+            _recentlyDamagedUnknown = null;
             return;
         }
+        // Process
+        _recentlyDamagedUnknown = null;
+
+        // Try INFERRING based on looking players that recently swung their hands
+        Entity player = MinecraftClient.getInstance().player;
+
+        // Integer[] swungEntities = _damageTargets.keySet().toArray(Integer[]::new);
+        for (Entity entity : MinecraftClient.getInstance().world.getEntities()) {
+            // Entity entity = MinecraftClient.getInstance().world.getEntityById(swungEntityId);
+            // System.out.println("checking: " + entity);
+            if (entity == null || (_recentlySwung.containsKey(entity.getId()) && _recentlySwung.get(entity.getId()).elapsed())) {
+                _recentlySwung.remove(entity.getId());
+                continue;
+            }
+            if (entity == null) {
+                continue;
+            }
+            if (entity.distanceTo(player) > 5) {
+                continue;
+            }
+            Vec3d playerCenter = player.getPos().add(new Vec3d(0, player.getStandingEyeHeight(), 0));
+            if (entity.isAlive() && LookHelper.isLookingAt(entity, playerCenter, 60)) {
+                // Consider this entity
+                _recentlySwung.remove(entity.getId());
+                onPlayerDamage(entity);
+                return;
+            }
+        }
+        // clear where the timeouts are too big
+    }
+
+    // Keep track of swinging entities
+    private void onEntitySwung(Entity entity) {
+        int id = entity.getId();
+        // System.out.println("SWUNG" + id);
+        TimerGame timeout = new TimerGame(SWING_TIMEOUT);
+        timeout.reset();
+        _recentlySwung.put(id, timeout);
+
+        processMaybeDamaged();
+    }
+
+    private void onPlayerDamage(Entity damagedBy) {
+        if (damagedBy == null) {
+            // System.out.println("recently damaged");
+            // unknown. Perform inferrence.
+            if (_recentlyDamagedUnknown == null || _recentlyDamagedUnknown.elapsed()) {
+                _recentlyDamagedUnknown = new TimerGame(0.3);
+                _recentlyDamagedUnknown.reset();                    
+            }
+            processMaybeDamaged();
+            return;
+        }
+        // don't do the inferrence, just accept
+        _recentlyDamagedUnknown = null;
         if (damagedBy instanceof PlayerEntity player) {
             String offendingName = player.getName().getString();
 
@@ -92,7 +159,7 @@ public class PlayerDefenseChain extends SingleTaskChain {
             if (potentialPlayer == null || (!potentialPlayer.isAlive() || _damageTargets.get(potentialAttacker).forgetAttackTimer.elapsed())) {
                 System.out.println("Either forgot or killed player: " + potentialAttacker + " (no longer attacking)");
                 _damageTargets.remove(potentialAttacker);
-                if (potentialAttacker == _currentlyAttackingPlayer) {
+                if (potentialAttacker.equals(_currentlyAttackingPlayer)) {
                     _currentlyAttackingPlayer = null;
                 }
             }
