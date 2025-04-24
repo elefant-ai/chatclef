@@ -16,6 +16,38 @@ import adris.altoclef.player2api.status.AgentStatus;
 import adris.altoclef.player2api.status.WorldStatus;
 
 public class LLMService {
+    public static List<GameAction> GetGreetingResponse(LLMState state, AgentStatus agentStatus,
+            WorldStatus worldStatus) {
+        List<GameAction> gameActions = new ArrayList<>();
+
+        try {
+            Character character = Player2APIService.getSelectedCharacter();
+            ConversationHistory history = state.getConversationHistory(agentStatus, worldStatus, character);
+            history.addUserMessage("Greet the user from these instructions:" + character.greetingInfo);
+            System.out.printf("[LLMService/GetGreetingResponse]: History: %s", history.toString());
+            JsonObject response = Player2APIService.completeConversation(history);
+
+            String responseAsString = response.toString();
+            System.out.printf("[LLMService/GetGreetingResponse]: LLM Response: %s", responseAsString);
+
+            // process message
+            String llmMessage = Utils.getStringJsonSafely(response, "message");
+            if (llmMessage != null && !llmMessage.isEmpty()) {
+                gameActions.add(new SendAssistantMessage(llmMessage, character));
+
+                // TODO: note if we do this here, then it will block. need to have two actions
+                // maybe, game actions and blocking actions.
+                // Player2APIService.textToSpeech(llmMessage, character);
+            }
+            return gameActions;
+
+        } catch (Exception e) {
+            System.err.println("[LLMService/GetGreetingResponse]: Error completing conversation");
+            e.printStackTrace();
+            return gameActions;
+        }
+
+    }
 
     public static List<GameAction> GetResponse(LLMState state, AgentStatus agentStatus, WorldStatus worldStatus) {
         // update character

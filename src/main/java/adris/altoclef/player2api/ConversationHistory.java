@@ -109,6 +109,15 @@ public class ConversationHistory {
 
     }
 
+    public boolean hasAssistantMessage() {
+        for (JsonObject message : conversationHistory) {
+            if ("assistant".equals(message.get("role").getAsString())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();

@@ -7,6 +7,7 @@ import adris.altoclef.player2api.LLM.LLMState;
 public class SendAssistantMessage implements GameAction {
     String message;
     Character character;
+
     public SendAssistantMessage(String msg, Character character) {
         this.message = msg;
         this.character = character;
@@ -17,7 +18,4 @@ public class SendAssistantMessage implements GameAction {
         bridge.sendAssistantMessage(message, character);
     }
 
-    public boolean doesBlock(){
-        return false;
-    }
 }

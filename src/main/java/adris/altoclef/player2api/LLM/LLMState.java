@@ -31,4 +31,8 @@ public class LLMState {
         return conversationHistory.isLastMessageFromAssistant();
     }
 
+    public boolean haveSentGreeting(){
+        return conversationHistory.hasAssistantMessage();
+    }
+
 }

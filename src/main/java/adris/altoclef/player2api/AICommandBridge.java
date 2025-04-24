@@ -2,6 +2,7 @@ package adris.altoclef.player2api;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.commandsystem.CommandExecutor;
+import adris.altoclef.player2api.eventqueue.Greeting;
 import adris.altoclef.player2api.eventqueue.QueueProcessor;
 import adris.altoclef.player2api.eventqueue.UserMessage;
 
@@ -21,10 +22,12 @@ public class AICommandBridge {
     public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     private long lastHeartbeatTime = System.nanoTime();
+    private boolean inGame;
 
     public AICommandBridge(CommandExecutor cmdExecutor, AltoClef mod) {
         this.mod = mod;
         this.cmdExecutor = cmdExecutor;
+        this.inGame = false;
     }
 
     public void executeAltoclefCommand(String cmd) {
@@ -46,8 +49,9 @@ public class AICommandBridge {
             sendHeartbeat();
             lastHeartbeatTime = now;
         }
-        // make sure we only run the queueProcessor if we are in the game (mod and player exist)
-        if (mod != null && mod.getPlayer() != null) {
+        // make sure we only run the queueProcessor if we are in the game (mod and
+        // player exist)
+        if (mod != null && mod.getPlayer() != null && inGame) {
             QueueProcessor.onTick(mod, this);
         }
     }
@@ -67,7 +71,12 @@ public class AICommandBridge {
     }
 
     public void onLogin() {
-        // sendGreeting();
+        if (!inGame) {
+            inGame = true;
+
+            // put onLogin stuff in here:
+            QueueProcessor.addEvent(new Greeting());
+        }
     }
 
     public void onUserMessage(String Message) {

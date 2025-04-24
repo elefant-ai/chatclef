@@ -5,22 +5,19 @@ import java.util.List;
 import adris.altoclef.player2api.AICommandBridge;
 import adris.altoclef.player2api.LLM.LLMState;
 import adris.altoclef.player2api.actions.GameAction;
-import adris.altoclef.player2api.actions.SendUserMessage;
 
-public class UserMessage extends Event {
+public class Greeting extends Event {
 
     private String msg;
 
-    public UserMessage(String msg) {
-        this.msg = msg;
+    public Greeting() {
     }
 
     @Override
     public List<GameAction> immediateHandle() {
-        System.out.println("[Events/UserMessage]: Adding user message event");
-        return List.of(new SendUserMessage(msg));
+        System.out.println("[Events/Greeting]: Adding Greeting event");
+        return List.of();
     }
-
 
     @Override
     public LLMState updateState(LLMState pvs) {
