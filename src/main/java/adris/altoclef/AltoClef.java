@@ -90,7 +90,6 @@ public class AltoClef implements ModInitializer {
 
     // AI Command & API
     private AICommandBridge aiBridge;
-    private long lastHeartbeatTime = System.nanoTime();
 
     private static AltoClef instance;
 
@@ -200,7 +199,7 @@ public class AltoClef implements ModInitializer {
             }
             else if (this.aiBridge.getEnabled()) {
                 evt.cancel();
-                this.aiBridge.processChatWithAPI(line);
+                this.aiBridge.onUserMessage(line); 
             }
         });
 
@@ -245,12 +244,7 @@ public class AltoClef implements ModInitializer {
             stop();
         }
 
-        // Call heartbeat every 60 seconds
-        long now = System.nanoTime();
-        if (now - lastHeartbeatTime > 60_000_000_000L) {
-            aiBridge.sendHeartbeat();
-            lastHeartbeatTime = now;
-        }
+        aiBridge.onTick();
 
         // TODO: should this go here?
         storageTracker.setDirty();
@@ -304,8 +298,7 @@ public class AltoClef implements ModInitializer {
         ChatclefToggleButton.render(context, context.getMatrices(), getAiBridge().getEnabled());
     }
     private void onLogin() {
-        // Sends greeting
-        this.aiBridge.sendGreeting();
+        this.aiBridge.onLogin();
     }
     private void initializeBaritoneSettings() {
         getExtraBaritoneSettings().canWalkOnEndPortal(false);

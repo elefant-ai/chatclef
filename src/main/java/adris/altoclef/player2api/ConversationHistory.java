@@ -2,7 +2,9 @@ package adris.altoclef.player2api;
 
 import com.google.gson.JsonObject;
 
+import adris.altoclef.player2api.status.AgentStatus;
 import adris.altoclef.player2api.status.ObjectStatus;
+import adris.altoclef.player2api.status.WorldStatus;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -75,7 +77,7 @@ public class ConversationHistory {
     }
 
     // Wraps latest msg with status if it is a user msg (should be)
-    public ConversationHistory copyThenWrapLatestWithStatus(String worldStatus, String agentStatus, String altoclefStatusMsgs) {
+    public ConversationHistory copyThenWrapLatestWithStatus(WorldStatus worldStatus, AgentStatus agentStatus) {
         ConversationHistory copy = new ConversationHistory(
                 conversationHistory.get(0).get("content").getAsString());
 
@@ -91,15 +93,20 @@ public class ConversationHistory {
                 String originalContent = last.get("content").getAsString();
                 ObjectStatus msgObj = new ObjectStatus();
                 msgObj.add("userMessage", originalContent);
-                msgObj.add("worldStatus", worldStatus);
-                msgObj.add("agentStatus", agentStatus);
-                msgObj.add("gameDebugMessages", altoclefStatusMsgs);
+                msgObj.add("worldStatus", worldStatus.toString());
+                msgObj.add("agentStatus", agentStatus.toString());
+                // msgObj.add("gameDebugMessages", altoclefStatusMsgs);
                 last.addProperty("content", msgObj.toString());
             }
             copy.addHistory(last);
         }
 
         return copy;
+    }
+
+    public boolean isLastMessageFromAssistant() {
+        return "assistant".equals(conversationHistory.get(conversationHistory.size() - 1).get("role").getAsString());
+
     }
 
     @Override
