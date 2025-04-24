@@ -8,7 +8,6 @@ import java.util.concurrent.Executors;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.player2api.AICommandBridge;
-import adris.altoclef.player2api.ConversationHistory;
 import adris.altoclef.player2api.LLM.LLMService;
 import adris.altoclef.player2api.LLM.LLMState;
 import adris.altoclef.player2api.actions.GameAction;

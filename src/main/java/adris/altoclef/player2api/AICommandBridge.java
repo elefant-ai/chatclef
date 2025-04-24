@@ -8,8 +8,6 @@ import adris.altoclef.player2api.eventqueue.UserMessage;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-
-
 // Interface between Altoclef and Player2
 public class AICommandBridge {
 
@@ -48,7 +46,10 @@ public class AICommandBridge {
             sendHeartbeat();
             lastHeartbeatTime = now;
         }
-        QueueProcessor.onTick(mod, this);
+        // make sure we only run the queueProcessor if we are in the game (mod and player exist)
+        if (mod != null && mod.getPlayer() != null) {
+            QueueProcessor.onTick(mod, this);
+        }
     }
 
     public void sendHeartbeat() {
@@ -60,7 +61,8 @@ public class AICommandBridge {
     public void sendAssistantMessage(String message, Character character) {
         mod.logCharacterMessage(message, character);
     }
-    public void sendUserMessage(String message){
+
+    public void sendUserMessage(String message) {
         mod.log(message);
     }
 
