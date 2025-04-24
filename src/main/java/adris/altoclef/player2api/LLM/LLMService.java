@@ -22,8 +22,8 @@ public class LLMService {
 
         try {
             Character character = Player2APIService.getSelectedCharacter();
+            state.addUserMessage("Greet the user from these instructions:" + character.greetingInfo);
             ConversationHistory history = state.getConversationHistory(agentStatus, worldStatus, character);
-            history.addUserMessage("Greet the user from these instructions:" + character.greetingInfo);
             System.out.printf("[LLMService/GetGreetingResponse]: History: %s", history.toString());
             JsonObject response = Player2APIService.completeConversation(history);
 

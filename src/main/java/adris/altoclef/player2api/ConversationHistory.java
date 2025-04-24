@@ -124,7 +124,7 @@ public class ConversationHistory {
         sb.append("ConversationHistory {\n");
         for (JsonObject message : conversationHistory) {
             String role = message.has("role") ? message.get("role").getAsString() : "unknown";
-            String content = message.has("content") ? message.get("content").getAsString() : "";
+            String content = message.has("content") && !message.get("content").isJsonNull() ? message.get("content").getAsString() : "";
             sb.append("  [").append(role).append("] ").append(content).append("\n");
         }
         sb.append("}");

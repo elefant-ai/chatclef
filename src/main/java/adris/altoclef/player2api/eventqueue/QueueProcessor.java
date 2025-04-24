@@ -35,7 +35,7 @@ public class QueueProcessor {
         long now = System.nanoTime();
 
         // minimum 5 seconds between LLM calls
-        boolean shouldProgress = (now - lastLLMCallTime > 5_000_000_000L);
+        boolean shouldProgress = (now - lastLLMCallTime > 10_000_000_000L);
 
         // handle any pending actions, wait if another thread is adding to it (should be
         // done quickly)
@@ -49,7 +49,7 @@ public class QueueProcessor {
             }
         }
 
-        if (isCallingLLM || shouldProgress)
+        if (isCallingLLM || !shouldProgress)
             return;
 
         Optional<Event> topEventOption = eventQ.poll();
