@@ -45,17 +45,12 @@ public class ChatclefToggleButton {
 
         // DrawableHelper.fill(matrices, rectX, rectY, rectX + rectWidth, rectY + rectHeight, 0xAA000000);
 
-        textRenderer.draw(
+        ctx.drawText(textRenderer,
             label,
-            textX,
-            textY,
+            (int)textX,
+            (int)textY,
             color,
-            true, // <-- this enables the shadow
-            matrices.peek().getPositionMatrix(),
-            client.getBufferBuilders().getEntityVertexConsumers(),
-            TextRenderer.TextLayerType.NORMAL,
-            0, // background color
-            0xF000F0 // lighting
+            true // <-- this enables the shadow
         );
     }
     

@@ -256,9 +256,11 @@ public class MobDefenseChain extends SingleTaskChain {
                 return 65;
             }
 
-            runAwayTask = new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL);
-            setTask(runAwayTask);
-            return 65;
+            if (isProjectileClose(mod)) {
+                runAwayTask = new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL);
+                setTask(runAwayTask);
+                return 65;    
+            }
         }
         // Dodge all mobs cause we boutta die son
         if (isInDanger(mod) && !escapeDragonBreath(mod) && !mod.getFoodChain().isShouldStop()) {
@@ -570,14 +572,18 @@ public class MobDefenseChain extends SingleTaskChain {
     private boolean isInDanger(AltoClef mod) {
         boolean witchNearby = mod.getEntityTracker().entityFound(WitchEntity.class);
 
+        double safeKeepDistance = SAFE_KEEP_DISTANCE;
+
+        // get away if there's witches
         float health = mod.getPlayer().getHealth();
-        if (health <= 10 && !witchNearby) {
-            return true;
+        if (health <= 10 && witchNearby) {
+            safeKeepDistance = DANGER_KEEP_DISTANCE;
         }
         if (mod.getPlayer().hasStatusEffect(StatusEffects.WITHER) ||
-                (mod.getPlayer().hasStatusEffect(StatusEffects.POISON) && !witchNearby)) {
-            return true;
+                (mod.getPlayer().hasStatusEffect(StatusEffects.POISON) && witchNearby)) {
+            safeKeepDistance = DANGER_KEEP_DISTANCE;
         }
+
         if (WorldHelper.isVulnerable()) {
             // If hostile mobs are nearby...
             try {
@@ -586,7 +592,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                     for (Entity entity : hostiles) {
-                        if (entity.isInRange(player, SAFE_KEEP_DISTANCE)
+                        if (entity.isInRange(player, safeKeepDistance)
                                 && !mod.getBehaviour().shouldExcludeFromForcefield(entity)
                                 && EntityHelper.isAngryAtPlayer(mod, entity)) {
                             return true;

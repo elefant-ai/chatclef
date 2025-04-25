@@ -6,12 +6,14 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.movement.FollowPlayerTask;
 import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
+import adris.altoclef.tasks.slot.ThrowCursorTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.Slot;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.Vec3d;
@@ -31,6 +33,9 @@ public class GiveItemToPlayerTask extends Task {
     private boolean droppingItems;
 
     private Task throwTask;
+
+    // Wait when we pick up and throw, gives the task some time to do slot actions and complete them.
+    private TimerGame _throwTimeout = new TimerGame(0.4);
 
     public GiveItemToPlayerTask(String player, ItemTarget... targets) {
         playerName = player;
@@ -62,8 +67,16 @@ public class GiveItemToPlayerTask extends Task {
         Vec3d targetPos = lastPos.get().add(0, 0.2f, 0);
 
         if (droppingItems) {
-            // THROW ITEMS
             setDebugState("Throwing items");
+
+            // Throw at an interval
+            if (!_throwTimeout.elapsed()) {
+                // wait
+                return null;
+            }
+            _throwTimeout.reset();
+
+            // THROW ITEMS
             LookHelper.lookAt(mod, targetPos);
             for (int i = 0; i < throwTarget.size(); ++i) {
                 ItemTarget target = throwTarget.get(i);
@@ -71,20 +84,24 @@ public class GiveItemToPlayerTask extends Task {
                     Optional<Slot> has = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches()).stream().findFirst();
                     if (has.isPresent()) {
                         Slot currentlyPresent = has.get();
+                        System.out.println("Currently present: " + currentlyPresent);
                         if (Slot.isCursor(currentlyPresent)) {
                             ItemStack stack = StorageHelper.getItemStackInSlot(currentlyPresent);
                             // Update target
                             target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
                             throwTarget.set(i, target);
                             Debug.logMessage("THROWING: " + has.get());
-                            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                            return new ThrowCursorTask();
                         } else {
                             mod.getSlotHandler().clickSlot(currentlyPresent, 0, SlotActionType.PICKUP);
+                            return null;
                         }
-                        return null;
                     }
                 }
             }
+
+            // STOP timing after this point.
+            _throwTimeout.forceElapse();
 
             if (!targetPos.isInRange(mod.getPlayer().getPos(), 4)) {
                 mod.log("Finished giving items.");
@@ -107,6 +124,8 @@ public class GiveItemToPlayerTask extends Task {
             }
             droppingItems = true;
             throwTarget.addAll(Arrays.asList(targets));
+
+            _throwTimeout.reset();
         }
 
         setDebugState("Going to player...");

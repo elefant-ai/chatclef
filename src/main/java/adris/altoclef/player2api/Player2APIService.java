@@ -89,7 +89,6 @@ public class Player2APIService {
 
                 if (messageObject != null && messageObject.has("content")) {
                     String content = messageObject.get("content").getAsString();
-                    conversationHistory.addAssistantMessage(content);
                     return Utils.parseCleanedJson(content);
                 }
             }

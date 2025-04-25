@@ -150,6 +150,7 @@ public class AltoClef implements ModInitializer {
         new PreEquipItemChain(taskRunner);
         new WorldSurvivalChain(taskRunner);
         foodChain = new FoodChain(taskRunner);
+        new PlayerDefenseChain(taskRunner);
 
         // Trackers
         storageTracker = new ItemStorageTracker(this, trackerManager, container -> containerSubTracker = container);
@@ -200,7 +201,8 @@ public class AltoClef implements ModInitializer {
             }
             else if (this.aiBridge.getEnabled()) {
                 evt.cancel();
-                this.aiBridge.processChatWithAPI(line);
+                Debug.logUserMessage(line);
+                this.aiBridge.addMessageToQueue("User: "+line);
             }
         });
 
@@ -244,12 +246,16 @@ public class AltoClef implements ModInitializer {
         if (InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
             stop();
         }
-
+        
         // Call heartbeat every 60 seconds
         long now = System.nanoTime();
         if (now - lastHeartbeatTime > 60_000_000_000L) {
             aiBridge.sendHeartbeat();
             lastHeartbeatTime = now;
+        }
+
+        if(aiBridge.getEnabled() && inGame && AltoClef.inGame()){
+            aiBridge.onTick();
         }
 
         // TODO: should this go here?
