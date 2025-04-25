@@ -244,7 +244,7 @@ public class AltoClef implements ModInitializer {
         if (InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
             stop();
         }
-
+        
         // Call heartbeat every 60 seconds
         long now = System.nanoTime();
         if (now - lastHeartbeatTime > 60_000_000_000L) {
@@ -252,8 +252,8 @@ public class AltoClef implements ModInitializer {
             lastHeartbeatTime = now;
         }
 
-        if(this.aiBridge.getEnabled()){
-            this.aiBridge.onTick();
+        if(aiBridge.getEnabled() && AltoClef.inGame()){
+            aiBridge.onTick();
         }
 
         // TODO: should this go here?
