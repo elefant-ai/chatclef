@@ -14,7 +14,7 @@ public class ConversationHistory {
         setBaseSystemPrompt(initialSystemPrompt); // Ensures system message always exists
     }
 
-    public void addHistory(JsonObject text, boolean doCutOff = true) {
+    public void addHistory(JsonObject text, boolean doCutOff) {
         conversationHistory.add(text);
         if (conversationHistory.size() > 64 && doCutOff) {
             // 0th index is always system prompt
@@ -55,7 +55,7 @@ public class ConversationHistory {
         JsonObject objectToAdd = new JsonObject();
         objectToAdd.addProperty("role", "system");
         objectToAdd.addProperty("content", systemText);
-        addHistory(objectToAdd);
+        addHistory(objectToAdd, false);
     }
 
     /**
@@ -67,7 +67,7 @@ public class ConversationHistory {
         JsonObject objectToAdd = new JsonObject();
         objectToAdd.addProperty("role", "assistant");
         objectToAdd.addProperty("content", messageText);
-        addHistory(objectToAdd);
+        addHistory(objectToAdd, true);
     }
 
     public List<JsonObject> getListJSON() {
@@ -81,7 +81,7 @@ public class ConversationHistory {
 
         // make deep copy
         for (int i = 1; i < conversationHistory.size() - 1; i++) {
-            copy.addHistory(Utils.deepCopy(conversationHistory.get(i)));
+            copy.addHistory(Utils.deepCopy(conversationHistory.get(i)), false);
         }
 
         // add status to latest message
@@ -96,7 +96,7 @@ public class ConversationHistory {
                 msgObj.add("gameDebugMessages", altoclefStatusMsgs);
                 last.addProperty("content", msgObj.toString());
             }
-            copy.addHistory(last);
+            copy.addHistory(last, false);
         }
 
         return copy;
