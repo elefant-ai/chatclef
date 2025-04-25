@@ -179,7 +179,7 @@ public class AICommandBridge {
                     cmdExecutor.execute(commandWithPrefix, () -> {
                         if (messageQueue.isEmpty()) {
                             // on finish
-                            addMessageToQueue(String.format("Command feedback: %s finished running. What shall we do next?",
+                            addMessageToQueue(String.format("Command feedback: %s finished running. What shall we do next? If no new action is needed to finish user's request, generate empty command `\"\"`.",
                                 commandResponse));
                         }
                     }, (err) -> {
