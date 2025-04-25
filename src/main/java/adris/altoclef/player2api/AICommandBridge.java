@@ -1,15 +1,10 @@
 package adris.altoclef.player2api;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.butler.Butler;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.player2api.status.AgentStatus;
 import adris.altoclef.player2api.status.WorldStatus;
-import adris.altoclef.skinchanger.SkinChanger;
-import adris.altoclef.skinchanger.SkinType;
-import adris.altoclef.tasksystem.Task;
-import adris.altoclef.ui.MessagePriority;
 import com.google.gson.JsonObject;
 
 import java.util.List;
@@ -23,6 +18,9 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
+
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class AICommandBridge {
     private ConversationHistory conversationHistory = null;
@@ -71,9 +69,13 @@ Valid Commands:
     
     private boolean _enabled = true;
 
+    private boolean llmProcessing = false;
+
     private MessageBuffer altoClefMsgBuffer = new MessageBuffer(10);
 
     public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
+
+    private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
 
     public AICommandBridge(CommandExecutor cmdExecutor, AltoClef mod) {
         this.mod = mod;
@@ -124,22 +126,27 @@ Valid Commands:
         altoClefMsgBuffer.addMsg(message);
     }
 
-    public void processChatWithAPI(String message) {
+    public void addMessageToQueue(String message) {
+        if (message == null) return;
+        messageQueue.offer(message);
+    }
+
+    public void processChatWithAPI() {
         executorService.submit(() -> {
             try {
+                llmProcessing = true;
                 updateInfo(); // this. is not allowed here
-                System.out.println("Sending message " + message + " to LLM");
-                conversationHistory.addUserMessage(message);
-
+                System.out.println("Sending messages to LLM");
+                
                 String agentStatus = AgentStatus.fromMod(mod).toString();
                 String worldStatus = WorldStatus.fromMod(mod).toString();
                 String altoClefDebugMsgs = altoClefMsgBuffer.dumpAndGetString(); 
                 ConversationHistory historyWithStatus = conversationHistory.copyThenWrapLatestWithStatus(worldStatus, agentStatus, altoClefDebugMsgs);
                 System.out.printf("History: %s" , historyWithStatus.toString());
                 JsonObject response = Player2APIService.completeConversation(historyWithStatus);
-                
                 String responseAsString = response.toString();
                 System.out.println("LLM Response: " + responseAsString);
+                conversationHistory.addAssistantMessage(responseAsString);
 
                 // process message
                 String llmMessage = Utils.getStringJsonSafely(response, "message");
@@ -161,6 +168,8 @@ Valid Commands:
             } catch (Exception e) {
                 e.printStackTrace();
                 System.err.println("Error communicating with API");
+            } finally {
+                llmProcessing = false;
             }
         });
     }
@@ -169,7 +178,7 @@ Valid Commands:
         System.out.println("Sending Greeting");
         executorService.submit(() -> {
             updateInfo();
-            processChatWithAPI(character.greetingInfo + " IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, DO NOT SEND A COMMAND!!");
+            addMessageToQueue(character.greetingInfo + " IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, DO NOT SEND A COMMAND!!");
         });
     }
 
@@ -177,6 +186,24 @@ Valid Commands:
         executorService.submit(() -> {
             Player2APIService.sendHeartbeat();
         });
+    }
+    
+    public void onTick() {
+        try{
+            if (messageQueue.isEmpty()) {
+                return;
+            }
+            // take() blocks until a message is available
+            String message = messageQueue.take();
+            conversationHistory.addUserMessage(message);
+            if (messageQueue.isEmpty() && !llmProcessing) {
+                // That was last message
+                processChatWithAPI();
+            }
+        } catch (InterruptedException e) {
+            // Handle the exception
+            Thread.currentThread().interrupt(); // Restore the interrupted status
+        }
     }
   
     public void setEnabled(boolean enabled) {

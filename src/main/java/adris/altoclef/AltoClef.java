@@ -200,7 +200,7 @@ public class AltoClef implements ModInitializer {
             }
             else if (this.aiBridge.getEnabled()) {
                 evt.cancel();
-                this.aiBridge.processChatWithAPI(line);
+                this.aiBridge.addMessageToQueue(line);
             }
         });
 
@@ -250,6 +250,10 @@ public class AltoClef implements ModInitializer {
         if (now - lastHeartbeatTime > 60_000_000_000L) {
             aiBridge.sendHeartbeat();
             lastHeartbeatTime = now;
+        }
+
+        if(this.aiBridge.getEnabled()){
+            this.aiBridge.onTick();
         }
 
         // TODO: should this go here?
