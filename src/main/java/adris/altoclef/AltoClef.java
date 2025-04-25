@@ -199,7 +199,7 @@ public class AltoClef implements ModInitializer {
                 getCommandExecutor().execute(line);
             }
             else if (this.aiBridge.getEnabled()) {
-                evt.cancel();
+                // evt.cancel();
                 this.aiBridge.addMessageToQueue(line);
             }
         });
