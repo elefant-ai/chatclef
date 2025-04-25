@@ -1,14 +1,19 @@
 package adris.altoclef.player2api;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
+import adris.altoclef.butler.ButlerConfig;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.player2api.status.AgentStatus;
 import adris.altoclef.player2api.status.WorldStatus;
 import com.google.gson.JsonObject;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -18,6 +23,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
+import net.minecraft.network.message.MessageType;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -84,6 +90,28 @@ public class AICommandBridge {
     public AICommandBridge(CommandExecutor cmdExecutor, AltoClef mod) {
         this.mod = mod;
         this.cmdExecutor = cmdExecutor;
+
+        EventBus.subscribe(ChatMessageEvent.class, evt -> {
+            String message = evt.messageContent();
+            String sender = evt.senderName();
+            MessageType messageType = evt.messageType();
+            String receiver = mod.getPlayer().getName().getString();
+            if (sender != null && !Objects.equals(sender, receiver) && shouldAccept(messageType)) {
+                String wholeMessage = "Other players: [" + sender + "] "  + message;
+                addMessageToQueue(wholeMessage);
+            }
+        });
+    }
+
+    private static boolean shouldAccept(MessageType messageType) {
+        // #if MC >= 11904
+        return messageType.chat().style().isItalic()
+                && messageType.chat().style().getColor() != null
+                && Objects.equals(messageType.chat().style().getColor().getName(), "gray");
+        // #else
+        // $$ //it doesnt look like previous versions did any type of checking
+        // $$ return true;
+        // #endif
     }
 
     /**
@@ -179,8 +207,9 @@ public class AICommandBridge {
                     cmdExecutor.execute(commandWithPrefix, () -> {
                         if (messageQueue.isEmpty()) {
                             // on finish
-                            addMessageToQueue(String.format("Command feedback: %s finished running. What shall we do next? If no new action is needed to finish user's request, generate empty command `\"\"`.",
-                                commandResponse));
+                            addMessageToQueue(String.format(
+                                    "Command feedback: %s finished running. What shall we do next? If no new action is needed to finish user's request, generate empty command `\"\"`.",
+                                    commandResponse));
                         }
                     }, (err) -> {
                         // on error

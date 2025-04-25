@@ -49,18 +49,19 @@ public class Butler {
 
         // Receive system events
         EventBus.subscribe(ChatMessageEvent.class, evt -> {
-            boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
-            String message = evt.messageContent();
-            String sender = evt.senderName();
-            MessageType messageType = evt.messageType();
-            String receiver = mod.getPlayer().getName().getString();
-            if (sender != null && !Objects.equals(sender, receiver) && shouldAccept(messageType)) {
-                String wholeMessage = sender + " " + receiver + " " + message;
-                if (debug) {
-                    Debug.logMessage("RECEIVED WHISPER: \"" + wholeMessage + "\".");
-                }
-                this.mod.getButler().receiveMessage(wholeMessage, receiver);
-            }
+            return; // disable butler
+            // boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
+            // String message = evt.messageContent();
+            // String sender = evt.senderName();
+            // MessageType messageType = evt.messageType();
+            // String receiver = mod.getPlayer().getName().getString();
+            // if (sender != null && !Objects.equals(sender, receiver) && shouldAccept(messageType)) {
+            //     String wholeMessage = sender + " " + receiver + " " + message;
+            //     if (debug) {
+            //         Debug.logMessage("RECEIVED WHISPER: \"" + wholeMessage + "\".");
+            //     }
+            //     this.mod.getButler().receiveMessage(wholeMessage, receiver);
+            // }
         });
     }
 
