@@ -32,6 +32,7 @@ public class AICommandBridge {
     private ConversationHistory conversationHistory = null;
     private Character character = null;
 
+    public static boolean avoidNexMessageFlag = false; 
     public static String initialPrompt = """
             General Instructions:
             You are an AI friend of the user. You are watching them play Minecraft.
@@ -74,6 +75,7 @@ public class AICommandBridge {
     private AltoClef mod = null;
 
     private boolean _enabled = true;
+    private boolean _public = true;
 
     private String _lastQueuedMessage = null;
 
@@ -92,28 +94,20 @@ public class AICommandBridge {
         this.cmdExecutor = cmdExecutor;
 
         EventBus.subscribe(ChatMessageEvent.class, evt -> {
+            if(!_public) return;
             String message = evt.messageContent();
             String sender = evt.senderName();
             MessageType messageType = evt.messageType();
             String receiver = mod.getPlayer().getName().getString();
-            if (sender != null && !Objects.equals(sender, receiver) && shouldAccept(messageType)) {
-                String wholeMessage = "Other players: [" + sender + "] "  + message;
+            System.out.printf("MESSAGE (%s) SENDER (%s) MESSAGE TYPE (%s)", message, sender, messageType);
+            if (sender != null && !Objects.equals(sender, receiver)) {
+                String wholeMessage = "Other players: [" + sender + "] " + message;
                 addMessageToQueue(wholeMessage);
             }
         });
     }
 
-    private static boolean shouldAccept(MessageType messageType) {
-        // #if MC >= 11904
-        return messageType.chat().style().isItalic()
-                && messageType.chat().style().getColor() != null
-                && Objects.equals(messageType.chat().style().getColor().getName(), "gray");
-        // #else
-        // $$ //it doesnt look like previous versions did any type of checking
-        // $$ return true;
-        // #endif
-    }
-
+   
     /**
      * Updates this. (conversationHistory, character) based on the currently
      * selected character.
@@ -189,13 +183,13 @@ public class AICommandBridge {
                 System.out.printf("History: %s", historyWithStatus.toString());
                 JsonObject response = Player2APIService.completeConversation(historyWithStatus);
                 String responseAsString = response.toString();
-                System.out.println("LLM Response: " + responseAsString);
+                System.out.printf("LLM Response: (%s)" , responseAsString);
                 conversationHistory.addAssistantMessage(responseAsString);
 
                 // process message
                 String llmMessage = Utils.getStringJsonSafely(response, "message");
                 if (llmMessage != null && !llmMessage.isEmpty()) {
-                    mod.logCharacterMessage(llmMessage, character);
+                    mod.logCharacterMessage(llmMessage, character, _public);
                     Player2APIService.textToSpeech(llmMessage, character);
                 }
 
@@ -267,6 +261,10 @@ public class AICommandBridge {
 
     public boolean getEnabled() {
         return _enabled;
+    }
+
+    public boolean isPublic(){
+        return _public;
     }
 
 }
