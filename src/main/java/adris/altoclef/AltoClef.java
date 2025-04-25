@@ -201,7 +201,7 @@ public class AltoClef implements ModInitializer {
             else if (this.aiBridge.getEnabled()) {
                 evt.cancel();
                 Debug.logUserMessage(line);
-                this.aiBridge.addMessageToQueue(line);
+                this.aiBridge.addMessageToQueue("User: "+line);
             }
         });
 

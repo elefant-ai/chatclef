@@ -28,11 +28,11 @@ public class AICommandBridge {
 
     public static String initialPrompt = """
             General Instructions:
-            You are an AI friend of the player. You are watching them play Minecraft.
+            You are an AI friend of the user. You are watching them play Minecraft.
             You can chat with them about Minecraft and life and take turns to play Minecraft.
             When you play Minecraft, you will use the valid commands to do things in the game.
-            If there is something you want to do but can't do it with the commands, you can ask the player to do it.
-            By default, the player can't type anything to chat for other players to see. That is because you are enabled. To talk or to silence you, the player can use the `@chatclef off` command. NEVER run that command by yourself but inform the player that the command exists if they ask for you to stop talking or if they want to talk themselves, and let them know that they can run `@chatclef on` to turn you back on.
+            If there is something you want to do but can't do it with the commands, you can ask the user to do it.
+            By default, the user can't type anything to chat for other players to see. That is because you are enabled. To talk or to silence you, the user can use the `@chatclef off` command. NEVER run that command by yourself but inform the user that the command exists if they ask for you to stop talking or if they want to talk themselves, and let them know that they can run `@chatclef on` to turn you back on.
 
 
             You take the personality of the following character:
@@ -42,7 +42,7 @@ public class AICommandBridge {
             User Message Format:
             The user messages will all be just strings, except for the current message. The current message will have extra information, namely it will be a JSON of the form:
             {
-                "userMessage" : "The message that was just sent by user which you should focus on responding to."
+                "userMessage" : "The message that was just sent to you. The message can be send by the user or command system or other players."
                 "worldStatus" : "The status of the current game world."
                 "agentStatus" : "The status of you, the agent in the game."
                 "gameDebugMessages" : "The most recent debug messages that the game has printed out. The user cannot see these."
@@ -177,13 +177,15 @@ public class AICommandBridge {
                     String commandWithPrefix = cmdExecutor.isClientCommand(commandResponse) ? commandResponse
                             : cmdExecutor.getCommandPrefix() + commandResponse;
                     cmdExecutor.execute(commandWithPrefix, () -> {
-                        // on finish
-                        addMessageToQueue(String.format("Task : %s finished running. Ask the user what do do next.",
+                        if (messageQueue.isEmpty()) {
+                            // on finish
+                            addMessageToQueue(String.format("Command feedback: %s finished running. What shall we do next?",
                                 commandResponse));
+                        }
                     }, (err) -> {
                         // on error
                         addMessageToQueue(
-                                String.format("Task : %s FAILED. The error was %s Ask the user what do do next.",
+                                String.format("Command feedback: %s FAILED. The error was %s.",
                                         commandResponse, err.getMessage()));
                     });
                 }
