@@ -14,9 +14,9 @@ public class ConversationHistory {
         setBaseSystemPrompt(initialSystemPrompt); // Ensures system message always exists
     }
 
-    public void addHistory(JsonObject text) {
+    public void addHistory(JsonObject text, boolean doCutOff = true) {
         conversationHistory.add(text);
-        if (conversationHistory.size() > 64) {
+        if (conversationHistory.size() > 64 && doCutOff) {
             // 0th index is always system prompt
             conversationHistory.remove(1);
         }
@@ -26,7 +26,7 @@ public class ConversationHistory {
         JsonObject objectToAdd = new JsonObject();
         objectToAdd.addProperty("role", "user");
         objectToAdd.addProperty("content", userText);
-        addHistory(objectToAdd);
+        addHistory(objectToAdd, false);
     }
 
     /**

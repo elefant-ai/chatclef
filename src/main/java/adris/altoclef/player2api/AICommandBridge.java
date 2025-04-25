@@ -129,6 +129,10 @@ Valid Commands:
     public void addMessageToQueue(String message) {
         if (message == null) return;
         messageQueue.offer(message);
+        if (messageQueue.size() > 10) {
+            // System.out.println("Message queue too long, removing oldest message");
+            messageQueue.poll(); // remove oldest message if queue is too long
+        }
     }
 
     public void processChatWithAPI() {
