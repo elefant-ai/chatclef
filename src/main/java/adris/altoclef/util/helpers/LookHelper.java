@@ -527,7 +527,7 @@ public interface LookHelper {
         Vec3d head = entity.getPos().add(new Vec3d(0, entity.getStandingEyeHeight(), 0));
         Rotation rotation = new Rotation(entity.getYaw(), entity.getPitch());
 
-        Vec3d look = RotationUtils.calcLookDirectionFromRotation(rotation);
+        Vec3d look = calcLookDirectionFromRotation(rotation);
 
         Vec3d targetLook = toLookAt.subtract(head).normalize();
 
