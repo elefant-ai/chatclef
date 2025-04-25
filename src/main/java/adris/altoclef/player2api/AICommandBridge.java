@@ -71,6 +71,8 @@ Valid Commands:
 
     private boolean llmProcessing = false;
 
+    private boolean eventPolling = false;
+
     private MessageBuffer altoClefMsgBuffer = new MessageBuffer(10);
 
     public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -174,6 +176,7 @@ Valid Commands:
                 System.err.println("Error communicating with API");
             } finally {
                 llmProcessing = false;
+                eventPolling = false;
             }
         });
     }
@@ -196,11 +199,16 @@ Valid Commands:
             if (messageQueue.isEmpty() || llmProcessing) {
                 return;
             }
-            String message = messageQueue.poll();
-            conversationHistory.addUserMessage(message);
-            if (messageQueue.isEmpty()) {
-                // That was last message
-                processChatWithAPI();
+            if (!eventPolling){
+                eventPolling = true;
+                String message = messageQueue.poll();
+                conversationHistory.addUserMessage(message);
+                if (messageQueue.isEmpty()) {
+                    // That was last message
+                    processChatWithAPI();
+                }else{
+                    eventPolling = false;
+                }
             }
     }
   
