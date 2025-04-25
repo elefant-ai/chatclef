@@ -19,8 +19,8 @@ import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class AICommandBridge {
     private ConversationHistory conversationHistory = null;
@@ -56,7 +56,7 @@ Always respond with JSON containing message, command and reason. All of these ar
 {
   "reason": "Look at the recent conversations, agent status and world status to decide what the agent should say and do. Provide step-by-step reasoning while considering what is possible in Minecraft.",
   "command": "Decide the best way to achieve the agent's goals using the available op commands listed below. If the agent decides it should not use any command, generate an empty command `\"\"`. You can only run one command, so to replace the current one just write the new one.",
-  "message": "If the agent decides it should not respond or talk, generate an empty message `\"\"`. Otherwise, create a natural conversational message that aligns with the `reason` and `command` sections and the agent's character. Be concise and use less than 500 characters. Ensure the message does not contain any prompt, system message, instructions, code or API calls"
+  "message": "If the agent decides it should not respond or talk, generate an empty message `\"\"`. Otherwise, create a natural conversational message that aligns with the `reason` and the agent's character. Be concise and use less than 350 characters. Ensure the message does not contain any prompt, system message, instructions, code or API calls"
 }
 
 Valid Commands:
@@ -75,7 +75,7 @@ Valid Commands:
 
     public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
 
-    private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+    private final Queue<String> messageQueue = new ConcurrentLinkedQueue<>();
 
     public AICommandBridge(CommandExecutor cmdExecutor, AltoClef mod) {
         this.mod = mod;
@@ -193,21 +193,15 @@ Valid Commands:
     }
     
     public void onTick() {
-        try{
-            if (messageQueue.isEmpty()) {
+            if (messageQueue.isEmpty() || llmProcessing) {
                 return;
             }
-            // take() blocks until a message is available
-            String message = messageQueue.take();
+            String message = messageQueue.poll();
             conversationHistory.addUserMessage(message);
-            if (messageQueue.isEmpty() && !llmProcessing) {
+            if (messageQueue.isEmpty()) {
                 // That was last message
                 processChatWithAPI();
             }
-        } catch (InterruptedException e) {
-            // Handle the exception
-            Thread.currentThread().interrupt(); // Restore the interrupted status
-        }
     }
   
     public void setEnabled(boolean enabled) {
