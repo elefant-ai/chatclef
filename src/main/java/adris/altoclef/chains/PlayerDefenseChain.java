@@ -14,6 +14,7 @@ import adris.altoclef.util.time.TimerGame;
 import adris.altoclef.tasks.entity.KillPlayerTask;
 import adris.altoclef.util.helpers.LookHelper;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.player.PlayerEntity;
@@ -35,6 +36,9 @@ public class PlayerDefenseChain extends SingleTaskChain {
 
     // TODO: CONFIG
     private static int HITS_BEFORE_RETALIATION = 3;
+    private static int HITS_BEFORE_RETALIATION_LOW_HEALTH = 2;
+    private static int LOW_HEALTH_THRESHOLD = 14; // 70%
+
     private static double SWING_TIMEOUT = 0.4;
 
     public PlayerDefenseChain(TaskRunner runner) {
@@ -52,7 +56,7 @@ public class PlayerDefenseChain extends SingleTaskChain {
         _recentlyDamagedUnknown = null;
 
         // Try INFERRING based on looking players that recently swung their hands
-        Entity player = MinecraftClient.getInstance().player;
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
 
         // Integer[] swungEntities = _damageTargets.keySet().toArray(Integer[]::new);
         for (Entity entity : MinecraftClient.getInstance().world.getEntities()) {
@@ -101,6 +105,9 @@ public class PlayerDefenseChain extends SingleTaskChain {
             processMaybeDamaged();
             return;
         }
+
+        ClientPlayerEntity clientPlayer = MinecraftClient.getInstance().player;
+
         // don't do the inferrence, just accept
         _recentlyDamagedUnknown = null;
         if (damagedBy instanceof PlayerEntity player) {
@@ -121,8 +128,9 @@ public class PlayerDefenseChain extends SingleTaskChain {
             target.forgetInstigationTimer.reset();
             if (!target.attacking) {
                 target.timesHit++;
-                System.out.println("Another player hit us " + target.timesHit + "times: " + offendingName + ", attacking if they hit us " + (HITS_BEFORE_RETALIATION - target.timesHit) + " more time(s).");
-                if (target.timesHit >= HITS_BEFORE_RETALIATION) {
+                int hitsBeforeRetaliation = clientPlayer.getHealth() < LOW_HEALTH_THRESHOLD ? HITS_BEFORE_RETALIATION_LOW_HEALTH : HITS_BEFORE_RETALIATION;
+                System.out.println("Another player hit us " + target.timesHit + "times: " + offendingName + ", attacking if they hit us " + (hitsBeforeRetaliation - target.timesHit) + " more time(s).");
+                if (target.timesHit >= hitsBeforeRetaliation) {
                     System.out.println("Too many attacks from another player! Retaliating attacks against offending player: " + offendingName);
                     target.attacking = true;
                     target.forgetAttackTimer.reset();
