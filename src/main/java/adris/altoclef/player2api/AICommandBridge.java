@@ -173,7 +173,13 @@ Valid Commands:
                 String commandResponse = Utils.getStringJsonSafely(response, "command");
                 if (commandResponse != null && !commandResponse.isEmpty()) {
                     if (!cmdExecutor.isClientCommand(commandResponse)) {
-                        cmdExecutor.execute(cmdExecutor.getCommandPrefix() + commandResponse);
+                        cmdExecutor.execute(cmdExecutor.getCommandPrefix() + commandResponse, () -> {
+                            // on finish
+                            addMessageToQueue(String.format("Task : %s finished running. Ask the user what do do next.", commandResponse));
+                        }, (err) -> {
+                            // on error
+                            addMessageToQueue(String.format("Task : %s FAILED. The error was %s Ask the user what do do next.", commandResponse, err.getMessage()));
+                        });
                     } else {
                         cmdExecutor.execute(commandResponse);
                     }
