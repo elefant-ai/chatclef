@@ -252,7 +252,7 @@ public class AltoClef implements ModInitializer {
             lastHeartbeatTime = now;
         }
 
-        if(aiBridge.getEnabled() && AltoClef.inGame()){
+        if(aiBridge.getEnabled() && inGame && AltoClef.inGame()){
             aiBridge.onTick();
         }
 

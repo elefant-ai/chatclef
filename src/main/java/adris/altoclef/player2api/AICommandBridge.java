@@ -196,10 +196,10 @@ Valid Commands:
     }
     
     public void onTick() {
-            if (messageQueue.isEmpty() || llmProcessing) {
+            if (messageQueue.isEmpty()) {
                 return;
             }
-            if (!eventPolling){
+            if (!eventPolling && !llmProcessing) {
                 eventPolling = true;
                 String message = messageQueue.poll();
                 conversationHistory.addUserMessage(message);
