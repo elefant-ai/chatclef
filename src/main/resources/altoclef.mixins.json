@@ -35,8 +35,9 @@
     "PlayerCollidesWithEntityMixin",
     "PlayerDamageMixin",
     "SimpleOptionMixin",
-    "EntityAnimationSwungMixin"
-  ],
+    "EntityAnimationSwungMixin",
+    "MobDeathMixin"
+]  ],
   "injectors": {
     "defaultRequire": 1
   }

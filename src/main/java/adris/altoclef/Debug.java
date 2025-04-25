@@ -3,6 +3,7 @@ package adris.altoclef;
 import adris.altoclef.player2api.AICommandBridge;
 import adris.altoclef.player2api.Character;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.Text;
 
 // TODO: Debug library or use Minecraft's built in debugger
@@ -11,9 +12,6 @@ public class Debug {
     private static final int DEBUG_LOG_LEVEL = 0;
     private static final int WARN_LOG_LEVEL = 1;
     private static final int ERROR_LOG_LEVEL = 2;
-
-
-
 
     public static void logInternal(String message) {
         if (canLog(DEBUG_LOG_LEVEL)) {
@@ -58,6 +56,15 @@ public class Debug {
         } else{
             logInternal(message);
         }
+    }
+
+    public static void logUserMessage(String message){
+        ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null) {
+               String msg = "<" +player.getName().getString() + "> " + message + "\u00A7r";
+               player.sendMessage(Text.of(msg), false);
+
+           }
     }
 
     public static void logMessage(String message) {

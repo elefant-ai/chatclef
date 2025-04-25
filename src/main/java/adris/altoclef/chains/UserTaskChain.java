@@ -92,15 +92,17 @@ public class UserTaskChain extends SingleTaskChain {
     @Override
     protected void onTaskFinish(AltoClef mod) {
         boolean shouldIdle = mod.getModSettings().shouldRunIdleCommandWhenNotActive();
-        if (!shouldIdle) {
-            // Stop.
-            mod.getTaskRunner().disable();
-            // Extra reset. Sometimes baritone is laggy and doesn't properly reset our press
-            mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
-        }
         double seconds = taskStopwatch.time();
         Task oldTask = mainTask;
         mainTask = null;
+        if (!shouldIdle) {
+            // Stop.
+            mod.stop();
+        } else {
+            // disable baritone at least
+            mod.getClientBaritone().getPathingBehavior().forceCancel();
+            mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();    
+        }
         if (currentOnFinish != null) {
             currentOnFinish.run();
         }
