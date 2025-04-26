@@ -35,8 +35,8 @@ public class PlayerDefenseChain extends SingleTaskChain {
     private String _currentlyAttackingPlayer = null;
 
     // TODO: CONFIG
-    private static int HITS_BEFORE_RETALIATION = 3;
-    private static int HITS_BEFORE_RETALIATION_LOW_HEALTH = 2;
+    private static int HITS_BEFORE_RETALIATION = 2;
+    private static int HITS_BEFORE_RETALIATION_LOW_HEALTH = 1;
     private static int LOW_HEALTH_THRESHOLD = 14; // 70%
 
     private static double SWING_TIMEOUT = 0.4;

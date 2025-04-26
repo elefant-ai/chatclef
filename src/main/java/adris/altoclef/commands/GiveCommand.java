@@ -14,7 +14,7 @@ import net.minecraft.item.ItemStack;
 
 public class GiveCommand extends Command {
     public GiveCommand() throws CommandException {
-        super("give", "Collects an item and gives it to you or someone else. Examples: `give Player diamond 3` to give player with username=Player 3 diamonds.", new Arg(String.class, "username", null, 2), new Arg(String.class, "item"), new Arg(Integer.class, "count", 1, 1));
+        super("give", "Give or drop an item to a player. Examples: `give Ellie diamond 3` to give player with username Ellie 3 diamonds.", new Arg(String.class, "username", null, 2), new Arg(String.class, "item"), new Arg(Integer.class, "count", 1, 1));
     }
 
     @Override

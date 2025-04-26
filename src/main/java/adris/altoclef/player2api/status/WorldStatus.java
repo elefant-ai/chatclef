@@ -8,10 +8,10 @@ public class WorldStatus extends ObjectStatus {
         return (WorldStatus) new WorldStatus()
                 .add("weather", StatusUtils.getWeatherString(mod))
                 .add("dimension", StatusUtils.getDimensionString(mod))
-                .add("spawnPos", StatusUtils.getSpawnPosString(mod))
-                .add("nearbyBlocks", StatusUtils.getNearbyBlocksString(mod))
-                .add("nearbyHostiles", StatusUtils.getNearbyHostileMobs(mod))
-                .add("nearbyPlayers", StatusUtils.getNearbyPlayers(mod))
+                .add("spawn position", StatusUtils.getSpawnPosString(mod))
+                .add("nearby blocks", StatusUtils.getNearbyBlocksString(mod))
+                .add("nearby hostiles", StatusUtils.getNearbyHostileMobs(mod))
+                .add("nearby other players", StatusUtils.getNearbyPlayers(mod))
                 .add("difficulty", StatusUtils.getDifficulty(mod))
                 .add("timeInfo", StatusUtils.getTimeString(mod));
     }
