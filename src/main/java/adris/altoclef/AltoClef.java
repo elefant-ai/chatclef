@@ -25,6 +25,7 @@ import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
 import adris.altoclef.ui.ChatclefToggleButton;
+import adris.altoclef.ui.PlayerModeToggleButton;
 import adris.altoclef.util.helpers.InputHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
@@ -40,8 +41,6 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import org.lwjgl.glfw.GLFW;
-
-// import adris.altoclef.ui.ChatclefToggleButton;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -277,6 +276,9 @@ public class AltoClef implements ModInitializer {
         if (ChatclefToggleButton.tick()) {
             setChatClefEnabled(!getAiBridge().getEnabled());
         }
+        if (PlayerModeToggleButton.tick()) {
+            setPlayerMode(!getAiBridge().getPlayerMode());
+        }
     }
 
     /// GETTERS AND SETTERS
@@ -295,6 +297,10 @@ public class AltoClef implements ModInitializer {
         }
     }
 
+    public void setPlayerMode(boolean enabled) {
+        getAiBridge().setPlayerMode(enabled);
+    }
+
 
     private void onClientRenderOverlay(DrawContextWrapper context) {
         context.setRenderLayer(RenderLayerVer.getGuiOverlay());
@@ -307,6 +313,7 @@ public class AltoClef implements ModInitializer {
         }
 
         ChatclefToggleButton.render(context, context.getMatrices(), getAiBridge().getEnabled());
+        PlayerModeToggleButton.render(context, context.getMatrices(), getAiBridge().getPlayerMode());
     }
     private void onLogin() {
         // Sends greeting

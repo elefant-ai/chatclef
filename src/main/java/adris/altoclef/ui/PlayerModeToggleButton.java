@@ -6,7 +6,8 @@ import adris.altoclef.multiversion.DrawContextWrapper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.util.math.MatrixStack;
-public class ChatclefToggleButton {
+
+public class PlayerModeToggleButton {
     private static final int WIDTH = 80;
     private static final int HEIGHT = 20;
     private static final int PADDING = 10;
@@ -16,18 +17,18 @@ public class ChatclefToggleButton {
     // Screen-space coords, calculated each frame
     private static int x, y;
 
-    public static void render(DrawContextWrapper ctx, MatrixStack matrices, boolean commandBridgeOn) {
+    public static void render(DrawContextWrapper ctx, MatrixStack matrices, boolean playerModeOn) {
         MinecraftClient client = MinecraftClient.getInstance();
         TextRenderer textRenderer = client.textRenderer;
 
         x = client.getWindow().getScaledWidth() - WIDTH - PADDING;
-        y = PADDING;
+        y = 2*PADDING;
 
         // Draw button background (semi-transparent black)
         // fill(matrices, x, y, x + WIDTH, y + HEIGHT, 0xAA000000);
 
         // Draw centered label with shadow
-        String label = commandBridgeOn ? "Chatclef: ON" : "Chatclef: OFF";
+        String label = playerModeOn ? "Player Mode: ON" : "Player Mode: OFF";
         int textWidth = textRenderer.getWidth(label);
         int textHeight = textRenderer.fontHeight;
         float textX = x + (WIDTH - textWidth) / 2f;
@@ -35,7 +36,7 @@ public class ChatclefToggleButton {
 
         boolean hovering = isMouseHovering();
 
-        int color = hovering ? 0xFFFF00 : (commandBridgeOn ? 0x00FF00 : 0xFF0000);
+        int color = hovering ? 0xFFFF00 : (playerModeOn ? 0x00FF00 : 0xFF0000);
 
         // TODO: fill doesn't seem to do anthing here
         int pad = 6;

@@ -1,6 +1,7 @@
 package adris.altoclef.player2api;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.player2api.status.AgentStatus;
@@ -11,12 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import com.google.gson.JsonObject;
-
-import adris.altoclef.AltoClef;
-import adris.altoclef.commandsystem.Command;
-import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.tasksystem.Task;
 
 import java.util.Queue;
@@ -68,6 +63,7 @@ public class AICommandBridge {
     private AltoClef mod = null;
 
     private boolean _enabled = true;
+    private boolean _playermode = false;
 
     private String _lastQueuedMessage = null;
 
@@ -167,7 +163,14 @@ public class AICommandBridge {
                 // process message
                 String llmMessage = Utils.getStringJsonSafely(response, "message");
                 if (llmMessage != null && !llmMessage.isEmpty()) {
-                    mod.logCharacterMessage(llmMessage, character);
+                    if (getPlayerMode()) {
+                        //send message to chat but don't listen to it
+                        // TODO this isn't working / not sure how to make it work
+                        mod.getMessageSender().enqueueChat(llmMessage, MessagePriority.TIMELY);
+                    } else {
+                        //send message to user only
+                        mod.logCharacterMessage(llmMessage, character);
+                    }
                     Player2APIService.textToSpeech(llmMessage, character);
                 }
 
@@ -238,6 +241,14 @@ public class AICommandBridge {
 
     public boolean getEnabled() {
         return _enabled;
+    }
+
+    public void setPlayerMode(boolean playermode) {
+        _playermode = playermode;
+    }
+
+    public boolean getPlayerMode() {
+        return _playermode;
     }
 
 }
