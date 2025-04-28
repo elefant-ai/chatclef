@@ -51,7 +51,9 @@ public class SlotHandler {
 
 
     public void clickSlot(Slot slot, int mouseButton, SlotActionType type) {
-        if (!canDoSlotAction()) return;
+        if (!canDoSlotAction()) {
+            return;
+        }
 
         if (slot.getWindowSlot() == -1) {
             clickSlot(PlayerSlot.UNDEFINED, 0, SlotActionType.PICKUP);
