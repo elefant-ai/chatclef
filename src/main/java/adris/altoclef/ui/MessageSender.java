@@ -2,6 +2,7 @@ package adris.altoclef.ui;
 
 import adris.altoclef.Debug;
 import adris.altoclef.multiversion.entity.PlayerVer;
+import adris.altoclef.player2api.AICommandBridge;
 import adris.altoclef.util.time.BaseTimer;
 import adris.altoclef.util.time.TimerReal;
 import net.minecraft.client.MinecraftClient;
@@ -80,12 +81,13 @@ public class MessageSender {
 
         ClientPlayNetworkHandler networkHandler =  MinecraftClient.getInstance().getNetworkHandler();
         assert networkHandler != null;
-
+        AICommandBridge.avoidNextMessageFlag = true;
         if (command) {
             PlayerVer.sendChatCommand(MinecraftClient.getInstance().player, message);
         } else {
             PlayerVer.sendChatMessage(MinecraftClient.getInstance().player, message);
         }
+        AICommandBridge.avoidNextMessageFlag = false;
     }
 
     private static abstract class BaseMessage {

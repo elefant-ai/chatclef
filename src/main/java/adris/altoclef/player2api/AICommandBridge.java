@@ -2,14 +2,18 @@ package adris.altoclef.player2api;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.ui.MessagePriority;
+import net.minecraft.network.message.MessageType;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.player2api.status.AgentStatus;
 import adris.altoclef.player2api.status.WorldStatus;
 import com.google.gson.JsonObject;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import adris.altoclef.tasksystem.Task;
@@ -20,6 +24,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public class AICommandBridge {
     private ConversationHistory conversationHistory = null;
     private Character character = null;
+    public static boolean avoidNextMessageFlag = false;
 
     public static String initialPrompt = """
             General Instructions:
@@ -71,6 +76,7 @@ public class AICommandBridge {
 
     private boolean eventPolling = false;
 
+
     private MessageBuffer altoClefMsgBuffer = new MessageBuffer(10);
 
     public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -80,6 +86,18 @@ public class AICommandBridge {
     public AICommandBridge(CommandExecutor cmdExecutor, AltoClef mod) {
         this.mod = mod;
         this.cmdExecutor = cmdExecutor;
+        EventBus.subscribe(ChatMessageEvent.class, evt -> {
+            if(!getPlayerMode()) return;
+            String message = evt.messageContent();
+            String sender = evt.senderName();
+            MessageType messageType = evt.messageType();
+            String receiver = mod.getPlayer().getName().getString();
+            System.out.printf("MESSAGE (%s) SENDER (%s) MESSAGE TYPE (%s)", message, sender, messageType);
+            if (sender != null && !Objects.equals(sender, receiver)) {
+                String wholeMessage = "Other players: [" + sender + "] " + message;
+                addMessageToQueue(wholeMessage);
+            }
+        });
     }
 
     /**
@@ -163,14 +181,15 @@ public class AICommandBridge {
                 // process message
                 String llmMessage = Utils.getStringJsonSafely(response, "message");
                 if (llmMessage != null && !llmMessage.isEmpty()) {
-                    if (getPlayerMode()) {
-                        //send message to chat but don't listen to it
-                        // TODO this isn't working / not sure how to make it work
-                        mod.getMessageSender().enqueueChat(llmMessage, MessagePriority.TIMELY);
-                    } else {
-                        //send message to user only
-                        mod.logCharacterMessage(llmMessage, character);
-                    }
+                    // if (getPlayerMode()) {
+                    //     //send message to chat but don't listen to it
+                    //     // TODO this isn't working / not sure how to make it work
+                    //     mod.getMessageSender().enqueueChat(llmMessage, MessagePriority.TIMELY);
+                    // } else {
+                    //     //send message to user only
+                    //     mod.logCharacterMessage(llmMessage, character, _public);
+                    // }
+                    mod.logCharacterMessage(llmMessage, character, getPlayerMode());
                     Player2APIService.textToSpeech(llmMessage, character);
                 }
 
@@ -250,5 +269,7 @@ public class AICommandBridge {
     public boolean getPlayerMode() {
         return _playermode;
     }
+
+   
 
 }

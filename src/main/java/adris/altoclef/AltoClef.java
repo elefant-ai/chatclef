@@ -41,6 +41,7 @@ import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import org.lwjgl.glfw.GLFW;
+import adris.altoclef.mixins.ChatInputMixin;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -193,7 +194,9 @@ public class AltoClef implements ModInitializer {
         // Receive + cancel chat
         EventBus.subscribe(SendChatEvent.class, evt -> {
             String line = evt.message;
-            if (getCommandExecutor().isClientCommand(line)) {
+            if (AICommandBridge.avoidNextMessageFlag) {
+                return;
+            } else if (getCommandExecutor().isClientCommand(line)) {
                 evt.cancel();
                 getCommandExecutor().execute(line);
             }
@@ -614,8 +617,8 @@ public class AltoClef implements ModInitializer {
     }
 
 
-    public void logCharacterMessage(String message, Character character){
-        Debug.logCharacterMessage(message, character);
+    public void logCharacterMessage(String message, Character character, boolean isPublic){
+        Debug.logCharacterMessage(message, character, isPublic);
     }
 
     public void logWarning(String message) {
