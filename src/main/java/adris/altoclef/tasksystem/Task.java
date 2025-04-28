@@ -90,6 +90,11 @@ public abstract class Task {
         stopped = true;
     }
 
+    public void fail(String reason) {
+        stop();
+        Debug.logMessage("Task FAILED: " + reason);
+    }
+
     /**
      * Lets the task know it's execution has been "suspended"
      * <p>

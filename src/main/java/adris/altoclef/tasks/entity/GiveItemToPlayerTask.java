@@ -61,7 +61,8 @@ public class GiveItemToPlayerTask extends Task {
         Optional<Vec3d> lastPos = mod.getEntityTracker().getPlayerMostRecentPosition(playerName);
 
         if (lastPos.isEmpty()) {
-            setDebugState("No player found/detected. Doing nothing until player loads into render distance.");
+            String nearbyUsernames = String.join(",", mod.getEntityTracker().getAllLoadedPlayerUsernames());
+            fail("No user in render distance found with username \"" + this.playerName + "\". Maybe this was a typo or there is a user with a similar name around? Nearby users: [" + nearbyUsernames + "].");
             return null;
         }
         Vec3d targetPos = lastPos.get().add(0, 0.2f, 0);
@@ -118,8 +119,8 @@ public class GiveItemToPlayerTask extends Task {
 
         if (targetPos.isInRange(mod.getPlayer().getPos(), 1.5)) {
             if (!mod.getEntityTracker().isPlayerLoaded(playerName)) {
-                mod.logWarning("Failed to get to player \"" + playerName + "\". We moved to where we last saw them but now have no idea where they are.");
-                stop();
+                String nearbyUsernames = String.join(",", mod.getEntityTracker().getAllLoadedPlayerUsernames());
+                fail("Failed to get to player \"" + this.playerName + "\". We moved to where we last saw them but now have no idea where they are. Nearby players: [" + nearbyUsernames + "]");
                 return null;
             }
             droppingItems = true;

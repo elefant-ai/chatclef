@@ -48,11 +48,20 @@ public class GiveCommand extends Command {
                 }
             }
         }
+
+        // Fail if user not found in render distance or not in user list
+        if (!mod.getEntityTracker().isPlayerLoaded(username)) {
+            String nearbyUsernames = String.join(",", mod.getEntityTracker().getAllLoadedPlayerUsernames());
+            Debug.logMessage("No user in render distance found with username \"" + username + "\". Maybe this was a typo or there is a user with a similar name around? Nearby users: [" + nearbyUsernames + "].");
+            finish();
+            return;
+        }
+
         if (target != null) {
             Debug.logMessage("USER: " + username + " : ITEM: " + item + " x " + count);
             mod.runUserTask(new GiveItemToPlayerTask(username, target), this::finish);
         } else {
-            mod.log("Item not found or task does not exist for item: " + item);
+            Debug.logMessage("Item not found or task does not exist for item: " + item);
             finish();
         }
     }
