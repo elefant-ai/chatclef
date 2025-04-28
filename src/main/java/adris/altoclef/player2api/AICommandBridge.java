@@ -1,22 +1,21 @@
 package adris.altoclef.player2api;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.ui.MessagePriority;
+
 import net.minecraft.network.message.MessageType;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.player2api.status.AgentStatus;
+import adris.altoclef.player2api.status.StatusUtils;
 import adris.altoclef.player2api.status.WorldStatus;
 import com.google.gson.JsonObject;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import adris.altoclef.tasksystem.Task;
 
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -76,7 +75,6 @@ public class AICommandBridge {
 
     private boolean eventPolling = false;
 
-
     private MessageBuffer altoClefMsgBuffer = new MessageBuffer(10);
 
     public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
@@ -87,12 +85,19 @@ public class AICommandBridge {
         this.mod = mod;
         this.cmdExecutor = cmdExecutor;
         EventBus.subscribe(ChatMessageEvent.class, evt -> {
-            if(!getPlayerMode()) return;
+            if (!getPlayerMode())
+                return;
             String message = evt.messageContent();
             String sender = evt.senderName();
+            // ignore more than 200 away
+            float distance = StatusUtils.getUserNameDistance(mod, sender);
+            if (distance > 200) {
+                System.out.printf("[AIBridge/CharMessageEvent]/Ignoring message, distance too high: %.2f%n", distance);
+                return;
+            }
             MessageType messageType = evt.messageType();
             String receiver = mod.getPlayer().getName().getString();
-            System.out.printf("MESSAGE (%s) SENDER (%s) MESSAGE TYPE (%s)", message, sender, messageType);
+            System.out.printf("[AIBridge/CharMessageEvent]/MESSAGE (%s) SENDER (%s) MESSAGE TYPE (%s), DISTANCE(%.2f%n)", message, sender, messageType, distance);
             if (sender != null && !Objects.equals(sender, receiver)) {
                 String wholeMessage = "Other players: [" + sender + "] " + message;
                 addMessageToQueue(wholeMessage);
@@ -182,12 +187,12 @@ public class AICommandBridge {
                 String llmMessage = Utils.getStringJsonSafely(response, "message");
                 if (llmMessage != null && !llmMessage.isEmpty()) {
                     // if (getPlayerMode()) {
-                    //     //send message to chat but don't listen to it
-                    //     // TODO this isn't working / not sure how to make it work
-                    //     mod.getMessageSender().enqueueChat(llmMessage, MessagePriority.TIMELY);
+                    // //send message to chat but don't listen to it
+                    // // TODO this isn't working / not sure how to make it work
+                    // mod.getMessageSender().enqueueChat(llmMessage, MessagePriority.TIMELY);
                     // } else {
-                    //     //send message to user only
-                    //     mod.logCharacterMessage(llmMessage, character, _public);
+                    // //send message to user only
+                    // mod.logCharacterMessage(llmMessage, character, _public);
                     // }
                     mod.logCharacterMessage(llmMessage, character, getPlayerMode());
                     Player2APIService.textToSpeech(llmMessage, character);
@@ -201,8 +206,9 @@ public class AICommandBridge {
                     cmdExecutor.execute(commandWithPrefix, () -> {
                         if (messageQueue.isEmpty()) {
                             // on finish
-                            addMessageToQueue(String.format("Command feedback: %s finished running. What shall we do next? If no new action is needed to finish user's request, generate empty command `\"\"`.",
-                                commandResponse));
+                            addMessageToQueue(String.format(
+                                    "Command feedback: %s finished running. What shall we do next? If no new action is needed to finish user's request, generate empty command `\"\"`.",
+                                    commandResponse));
                         }
                     }, (err) -> {
                         // on error
@@ -269,7 +275,5 @@ public class AICommandBridge {
     public boolean getPlayerMode() {
         return _playermode;
     }
-
-   
 
 }

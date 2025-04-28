@@ -169,6 +169,16 @@ public class StatusUtils {
         }
     }
 
+    public static float getUserNameDistance(AltoClef mod, String targetUsername) {
+        for (PlayerEntity player : mod.getWorld().getPlayers()) {
+            String username = player.getName().getString();
+            if (username.equals(targetUsername)) {
+                return player.distanceTo(mod.getPlayer());
+            }
+        }
+        return Float.MAX_VALUE;
+    }
+
     public static String getDifficulty(AltoClef mod) {
         return mod.getWorld().getDifficulty().toString();
     }
@@ -183,7 +193,7 @@ public class StatusUtils {
 
     }
 
-    public static String getGamemodeString(AltoClef mod){
+    public static String getGamemodeString(AltoClef mod) {
         return mod.getPlayer().isCreative() ? "creative" : "survival";
     }
 }
