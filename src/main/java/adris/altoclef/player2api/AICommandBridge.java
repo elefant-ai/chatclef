@@ -201,15 +201,14 @@ public class AICommandBridge {
                     String commandWithPrefix = cmdExecutor.isClientCommand(commandResponse) ? commandResponse
                             : cmdExecutor.getCommandPrefix() + commandResponse;
                     if(commandWithPrefix.equals("@stop")){
-                        System.out.println("STOPPING");
                         mod.isStopping = true;
                     }
                     else{
-                        System.out.printf("GOING (%s)", commandWithPrefix);
                         mod.isStopping = false;
                     }
                     cmdExecutor.execute(commandWithPrefix, () -> {
                         if(mod.isStopping){
+                            System.out.printf("[AICommandBridge/processChat]: (%s) was cancelled. Not adding finish event to queue.", commandWithPrefix);
                             // Canceled logic here
                         }
                         if (messageQueue.isEmpty() && !mod.isStopping) {
