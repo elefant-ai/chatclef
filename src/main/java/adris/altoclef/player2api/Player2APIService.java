@@ -164,15 +164,15 @@ public class Player2APIService {
     public static String stopSTT () {
         try{
             Map<String, JsonElement> responseMap = sendRequest("/v1/stt/stop", true, null);
-            if(!responseMap.containsKey("message")){
-                throw new Exception("Could not find messages in response");
+            if(!responseMap.containsKey("text")){
+                throw new Exception("Could not find key 'text' in response");
             }
-            return responseMap.get("message").getAsString();
+            return responseMap.get("text").getAsString();
         } catch (Exception e) {
             // handle timeout err here?
             return e.getMessage();
         }
-    }
+    } 
 
     public static void sendHeartbeat(){
         try{

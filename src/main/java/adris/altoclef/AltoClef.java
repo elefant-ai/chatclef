@@ -31,10 +31,13 @@ import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
+import net.minecraft.client.option.KeyBinding;
+import net.minecraft.client.util.InputUtil;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
@@ -98,6 +101,10 @@ public class AltoClef implements ModInitializer {
 
     private boolean inGame = false;
 
+    // STT key:
+    private static KeyBinding sttKeybind;
+    private static boolean wasPressedLastFrame = false;
+
     // Are we in game (playing in a server/world)
     public static boolean inGame() {
         return MinecraftClient.getInstance().player != null
@@ -124,6 +131,25 @@ public class AltoClef implements ModInitializer {
         // EventBus.subscribe(ClientLoginEvent.class, evt -> {
         // System.out.println("LOGGED IN");
         // });
+        sttKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                "key.chatclef.sttKey",
+                InputUtil.Type.KEYSYM,
+                GLFW.GLFW_KEY_X,
+                "category.chatclef.keybindings"));
+
+        net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(client -> {
+            boolean isCurrentlyPressed = sttKeybind.isPressed();
+            long now = System.nanoTime();
+            if (isCurrentlyPressed && !wasPressedLastFrame) {
+                System.out.println("PRESSED KEY" + now);
+                aiBridge.startSTT();
+            } else if (!isCurrentlyPressed && wasPressedLastFrame) {
+                System.out.println("LET GO OF KEY" + now);
+                aiBridge.stopSTT();
+            }
+
+            wasPressedLastFrame = isCurrentlyPressed;
+        });
 
     }
 

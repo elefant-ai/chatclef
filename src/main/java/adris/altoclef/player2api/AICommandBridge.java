@@ -288,6 +288,9 @@ public class AICommandBridge {
     public void stopSTT() {
         sttThread.execute(() -> {
             String result = Player2APIService.stopSTT();
+            if (result.length() == 0) {
+                addMessageToQueue(String.format("The user tried to send a STT message, but it was not picked up."));
+            }
             addMessageToQueue(String.format("User: %s", result));
         });
     }
