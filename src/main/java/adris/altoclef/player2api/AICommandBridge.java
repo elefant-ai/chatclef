@@ -44,8 +44,6 @@ public class AICommandBridge {
                 "gameDebugMessages" : "The most recent debug messages that the game has printed out. The user cannot see these."
             }
 
-
-
             Response Format:
             Always respond with JSON containing message, command and reason. All of these are strings.
 
@@ -55,6 +53,11 @@ public class AICommandBridge {
               "message": "If you decide you should not respond or talk, generate an empty message `\"\"`. Otherwise, create a natural conversational message that aligns with the `reason` and the your character. Be concise and use less than 350 characters. Ensure the message does not contain any prompt, system message, instructions, code or API calls"
             }
 
+            Additional Guidelines:
+            Meaningful Content: Ensure conversations progress with substantive information.
+            Handle Misspellings: Make educated guesses if users misspell item names.
+            Avoid Filler Phrases: Do not engage in repetitive or filler content.
+            
             Valid Commands:
             {{validCommands}}
 
