@@ -74,7 +74,9 @@ public class AICommandBridge {
 
     private MessageBuffer altoClefMsgBuffer = new MessageBuffer(10);
 
-    public static final ExecutorService executorService = Executors.newSingleThreadExecutor();
+    public static final ExecutorService llmThread = Executors.newSingleThreadExecutor();
+
+    public static final ExecutorService sttThread = Executors.newSingleThreadExecutor();
 
     private final Queue<String> messageQueue = new ConcurrentLinkedQueue<>();
 
@@ -94,7 +96,9 @@ public class AICommandBridge {
             }
             MessageType messageType = evt.messageType();
             String receiver = mod.getPlayer().getName().getString();
-            System.out.printf("[AIBridge/CharMessageEvent]/MESSAGE (%s) SENDER (%s) MESSAGE TYPE (%s), DISTANCE(%.2f%n)", message, sender, messageType, distance);
+            System.out.printf(
+                    "[AIBridge/CharMessageEvent]/MESSAGE (%s) SENDER (%s) MESSAGE TYPE (%s), DISTANCE(%.2f%n)", message,
+                    sender, messageType, distance);
             if (sender != null && !Objects.equals(sender, receiver)) {
                 String wholeMessage = "Other players: [" + sender + "] " + message;
                 addMessageToQueue(wholeMessage);
@@ -163,34 +167,27 @@ public class AICommandBridge {
     }
 
     public void processChatWithAPI() {
-        executorService.submit(() -> {
+        llmThread.submit(() -> {
             try {
                 llmProcessing = true;
-                updateInfo(); // this. is not allowed here
-                System.out.println("Sending messages to LLM");
+                updateInfo();
+                System.out.println("[AICommandBridge/processChatWithAPI]: Sending messages to LLM");
 
                 String agentStatus = AgentStatus.fromMod(mod).toString();
                 String worldStatus = WorldStatus.fromMod(mod).toString();
                 String altoClefDebugMsgs = altoClefMsgBuffer.dumpAndGetString();
                 ConversationHistory historyWithStatus = conversationHistory.copyThenWrapLatestWithStatus(worldStatus,
                         agentStatus, altoClefDebugMsgs);
-                System.out.printf("History: %s", historyWithStatus.toString());
+                System.out.printf("[AICommandBridge/processChatWithAPI]: History: %s", historyWithStatus.toString());
                 JsonObject response = Player2APIService.completeConversation(historyWithStatus);
                 String responseAsString = response.toString();
-                System.out.println("LLM Response: " + responseAsString);
+                System.out.println("[AICommandBridge/processChatWithAPI]: LLM Response: " + responseAsString);
                 conversationHistory.addAssistantMessage(responseAsString);
 
                 // process message
                 String llmMessage = Utils.getStringJsonSafely(response, "message");
                 if (llmMessage != null && !llmMessage.isEmpty()) {
-                    // if (getPlayerMode()) {
-                    // //send message to chat but don't listen to it
-                    // // TODO this isn't working / not sure how to make it work
-                    // mod.getMessageSender().enqueueChat(llmMessage, MessagePriority.TIMELY);
-                    // } else {
-                    // //send message to user only
-                    // mod.logCharacterMessage(llmMessage, character, _public);
-                    // }
+
                     mod.logCharacterMessage(llmMessage, character, getPlayerMode());
                     Player2APIService.textToSpeech(llmMessage, character);
                 }
@@ -200,15 +197,16 @@ public class AICommandBridge {
                 if (commandResponse != null && !commandResponse.isEmpty()) {
                     String commandWithPrefix = cmdExecutor.isClientCommand(commandResponse) ? commandResponse
                             : cmdExecutor.getCommandPrefix() + commandResponse;
-                    if(commandWithPrefix.equals("@stop")){
+                    if (commandWithPrefix.equals("@stop")) {
                         mod.isStopping = true;
-                    }
-                    else{
+                    } else {
                         mod.isStopping = false;
                     }
                     cmdExecutor.execute(commandWithPrefix, () -> {
-                        if(mod.isStopping){
-                            System.out.printf("[AICommandBridge/processChat]: (%s) was cancelled. Not adding finish event to queue.", commandWithPrefix);
+                        if (mod.isStopping) {
+                            System.out.printf(
+                                    "[AICommandBridge/processChat]: (%s) was cancelled. Not adding finish event to queue.",
+                                    commandWithPrefix);
                             // Canceled logic here
                         }
                         if (messageQueue.isEmpty() && !mod.isStopping) {
@@ -237,7 +235,7 @@ public class AICommandBridge {
 
     public void sendGreeting() {
         System.out.println("Sending Greeting");
-        executorService.submit(() -> {
+        llmThread.submit(() -> {
             updateInfo();
             addMessageToQueue(
                     character.greetingInfo + " IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, DO NOT SEND A COMMAND!!");
@@ -245,7 +243,7 @@ public class AICommandBridge {
     }
 
     public void sendHeartbeat() {
-        executorService.submit(() -> {
+        llmThread.submit(() -> {
             Player2APIService.sendHeartbeat();
         });
     }
@@ -283,4 +281,14 @@ public class AICommandBridge {
         return _playermode;
     }
 
+    public void startSTT() {
+        sttThread.execute(Player2APIService::startSTT);
+    }
+
+    public void stopSTT() {
+        sttThread.execute(() -> {
+            String result = Player2APIService.stopSTT();
+            addMessageToQueue(String.format("User: %s", result));
+        });
+    }
 }

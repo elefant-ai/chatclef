@@ -157,7 +157,7 @@ public class Player2APIService {
         try {
             sendRequest("/v1/stt/start", true, requestBody);
         } catch (Exception e) {
-            System.err.println("Error in startSST: " + e.getMessage());
+            System.err.println("[Player2APIService/startSTT]: Error" + e.getMessage());
         }
     }
 
