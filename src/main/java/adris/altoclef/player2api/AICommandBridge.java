@@ -200,8 +200,19 @@ public class AICommandBridge {
                 if (commandResponse != null && !commandResponse.isEmpty()) {
                     String commandWithPrefix = cmdExecutor.isClientCommand(commandResponse) ? commandResponse
                             : cmdExecutor.getCommandPrefix() + commandResponse;
+                    if(commandWithPrefix.equals("@stop")){
+                        System.out.println("STOPPING");
+                        mod.isStopping = true;
+                    }
+                    else{
+                        System.out.printf("GOING (%s)", commandWithPrefix);
+                        mod.isStopping = false;
+                    }
                     cmdExecutor.execute(commandWithPrefix, () -> {
-                        if (messageQueue.isEmpty() && !commandResponse.contains("stop")) {
+                        if(mod.isStopping){
+                            // Canceled logic here
+                        }
+                        if (messageQueue.isEmpty() && !mod.isStopping) {
                             // on finish
                             addMessageToQueue(String.format(
                                     "Command feedback: %s finished running. What shall we do next? If no new action is needed to finish user's request, generate empty command `\"\"`.",
