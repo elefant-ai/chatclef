@@ -1,7 +1,7 @@
 package adris.altoclef.player2api;
 
 import adris.altoclef.AltoClef;
-
+import adris.altoclef.Debug;
 import net.minecraft.network.message.MessageType;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
@@ -288,10 +288,21 @@ public class AICommandBridge {
     public void stopSTT() {
         sttThread.execute(() -> {
             String result = Player2APIService.stopSTT();
+
+            if(!_enabled){
+                mod.getMessageSender().enqueueChat(result, null);
+                return;
+            }
             if (result.length() == 0) {
                 addMessageToQueue(String.format("The user tried to send a STT message, but it was not picked up."));
+                Debug.logUserMessage("Could not hear user message.");
+                return;
             }
             addMessageToQueue(String.format("User: %s", result));
+            // if (getPlayerMode()) {
+            // } else {
+            Debug.logUserMessage(result);
+            // }
         });
     }
 }
