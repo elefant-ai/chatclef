@@ -18,8 +18,8 @@ public class ConversationHistory {
     private final List<JsonObject> conversationHistory = new ArrayList<>();
     private final Path historyFile;
     private boolean loadedFromFile = false;
-    private static final int MAX_HISTORY = 12;
-    private static final int SUMMARY_COUNT = 6;
+    private static final int MAX_HISTORY = 64;
+    private static final int SUMMARY_COUNT = 48;
 
     /**
      * Constructs conversation history tied to a specific character, naming the file accordingly.
@@ -84,6 +84,8 @@ public class ConversationHistory {
                 conversationHistory.addAll(tail);
             }
             if (historyFile != null) saveToFile();
+        }else if (doCutOff && conversationHistory.size()%8 == 0 && historyFile != null) {
+            saveToFile();
         }
     }
 
