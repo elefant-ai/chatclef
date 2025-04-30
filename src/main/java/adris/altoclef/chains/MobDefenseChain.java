@@ -377,12 +377,10 @@ public class MobDefenseChain extends SingleTaskChain {
 
     public static ToolItem getBestWeapon(AltoClef mod) {
         Item[] WEAPONS = new Item[]{
-            Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD,
-                Items.STONE_SWORD, Items.WOODEN_SWORD, //
-            Items.NETHERITE_AXE, Items.DIAMOND_AXE, Items.IRON_AXE, Items.GOLDEN_AXE,
-                Items.STONE_AXE, Items.WOODEN_AXE
-
-            };
+            Items.NETHERITE_SWORD, Items.NETHERITE_AXE, Items.DIAMOND_SWORD, Items.DIAMOND_AXE,
+            Items.IRON_SWORD, Items.IRON_AXE, Items.GOLDEN_SWORD, Items.GOLDEN_AXE,
+            Items.STONE_SWORD, Items.STONE_AXE, Items.WOODEN_SWORD, Items.WOODEN_AXE
+        };
 
         ToolItem bestSword = null;
         for (Item item : WEAPONS) {

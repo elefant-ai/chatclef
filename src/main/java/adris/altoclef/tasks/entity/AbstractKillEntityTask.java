@@ -5,6 +5,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
+import adris.altoclef.chains.MobDefenseChain;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -36,7 +37,13 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
     public static Item bestWeapon(AltoClef mod) {
         List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
 
-        Item bestItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
+        Item bestItem = MobDefenseChain.getBestWeapon(mod);
+        if (bestItem != null) {
+            return bestItem;
+        }
+
+        // just get highest damage
+        bestItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
         float bestDamage = Float.NEGATIVE_INFINITY;
 
         if (bestItem instanceof ToolItem handToolItem) {
