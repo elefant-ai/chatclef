@@ -76,7 +76,7 @@ public class GiveCommand extends Command {
                 }
             }
 
-            String closestMatch = FuzzySearchHelper.getClosestMatch(item, validNames);
+            String closestMatch = FuzzySearchHelper.getClosestMatchMinecraftItems(item, validNames);
 
             mod.log("Item not found or task does not exist for item: \"" + item + "\". Does the user mean \"" + closestMatch + "\"?");
             finish();

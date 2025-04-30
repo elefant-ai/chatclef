@@ -40,7 +40,7 @@ public class ItemList {
                     items.put(item, items.getOrDefault(item, 0) + count);
                 } else {
                     Collection<String> allValidTargets = TaskCatalogue.resourceNames();
-                    String closestMatch = FuzzySearchHelper.getClosestMatch(item, allValidTargets);
+                    String closestMatch = FuzzySearchHelper.getClosestMatchMinecraftItems(item, allValidTargets);
 
                     if (closestMatch != null) {
                         throw new CommandException("Item not catalogued: " + item + ". Did the user mean \"" + closestMatch + "\"?");
@@ -59,7 +59,7 @@ public class ItemList {
                 String name = items[0];
                 if (!TaskCatalogue.taskExists(name)) {
                     Collection<String> allValidTargets = TaskCatalogue.resourceNames();
-                    String closestMatch = FuzzySearchHelper.getClosestMatch(name, allValidTargets);
+                    String closestMatch = FuzzySearchHelper.getClosestMatchMinecraftItems(name, allValidTargets);
 
                     if (closestMatch != null) {
                         throw new CommandException("Item not catalogued: " + name + ". Did the user mean \"" + closestMatch + "\"?");

@@ -9,6 +9,12 @@ import java.util.Map;
 
 public class FuzzySearchHelper {
 
+    public static String getClosestMatchMinecraftItems(String attemptedSearch, Collection<String> validValues) {
+        // ex. "Wooden Pickaxe" -> "wooden_pickaxe"
+        attemptedSearch = attemptedSearch.toLowerCase().trim().replace(" ", "_");
+        return getClosestMatch(attemptedSearch, validValues);
+    }
+
     public static String getClosestMatch(String attemptedSearch, Collection<String> validValues) {
         List<String> result = new ArrayList<>(validValues);
         
