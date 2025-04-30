@@ -34,7 +34,7 @@ public class ConversationHistory {
 
         if (Files.exists(historyFile)) {
             loadFromFile();
-            addSystemMessage("Welcome back!");
+            setBaseSystemPrompt(initialSystemPrompt);
             loadedFromFile = true;
         } else {
             setBaseSystemPrompt(initialSystemPrompt);
@@ -137,7 +137,19 @@ public class ConversationHistory {
         try (BufferedReader reader = Files.newBufferedReader(historyFile)) {
             String line;
             while ((line = reader.readLine()) != null) {
-                loaded.add(JsonParser.parseString(line).getAsJsonObject());
+                JsonObject obj = JsonParser.parseString(line).getAsJsonObject();
+                // Trim content field if too long
+                if (obj.has("content")) {
+                    String content = obj.get("content").getAsString();
+                    if (content.length() > 500) {
+                        obj.addProperty("content", content.substring(0, 500));
+                    }
+                }
+                loaded.add(obj);
+                // Enforce maximum history in memory by discarding oldest when exceeding
+                if (loaded.size() > MAX_HISTORY) {
+                    break;
+                }
             }
             conversationHistory.clear();
             conversationHistory.addAll(loaded);
