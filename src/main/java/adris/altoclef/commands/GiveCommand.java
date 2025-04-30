@@ -1,5 +1,8 @@
 package adris.altoclef.commands;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -9,6 +12,7 @@ import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.tasks.entity.GiveItemToPlayerTask;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.FuzzySearchHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.ItemStack;
 
@@ -52,7 +56,20 @@ public class GiveCommand extends Command {
             Debug.logMessage("USER: " + username + " : ITEM: " + item + " x " + count);
             mod.runUserTask(new GiveItemToPlayerTask(username, target), this::finish);
         } else {
-            mod.log("Item not found or task does not exist for item: " + item);
+            // Valid names = task_resources U inventory
+
+            Set<String> validNames = new HashSet<>(TaskCatalogue.resourceNames());
+            for (int i = 0; i < mod.getPlayer().getInventory().size(); ++i) {
+                ItemStack stack = mod.getPlayer().getInventory().getStack(i);
+                if (!stack.isEmpty()) {
+                    String name = ItemHelper.stripItemName(stack.getItem());
+                    validNames.add(name);
+                }
+            }
+
+            String closestMatch = FuzzySearchHelper.getClosestMatch(item, validNames);
+
+            mod.log("Item not found or task does not exist for item: \"" + item + "\". Does the user mean \"" + closestMatch + "\"?");
             finish();
         }
     }

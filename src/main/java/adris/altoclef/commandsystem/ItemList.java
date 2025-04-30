@@ -2,7 +2,9 @@ package adris.altoclef.commandsystem;
 
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.FuzzySearchHelper;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 public class ItemList {
@@ -37,7 +39,14 @@ public class ItemList {
                 if (TaskCatalogue.taskExists(item)) {
                     items.put(item, items.getOrDefault(item, 0) + count);
                 } else {
-                    throw new CommandException("Item not catalogued: " + item);
+                    Collection<String> allValidTargets = TaskCatalogue.resourceNames();
+                    String closestMatch = FuzzySearchHelper.getClosestMatch(item, allValidTargets);
+
+                    if (closestMatch != null) {
+                        throw new CommandException("Item not catalogued: " + item + ". Did the user mean \"" + closestMatch + "\"?");
+                    } else {
+                        throw new CommandException("Item not catalogued: " + item + ".");
+                    }
                 }
             }
             if (items.size() != 0) {
@@ -49,7 +58,14 @@ public class ItemList {
             if (items.length >= 1) {
                 String name = items[0];
                 if (!TaskCatalogue.taskExists(name)) {
-                    throw new CommandException("Item not catalogued: " + name);
+                    Collection<String> allValidTargets = TaskCatalogue.resourceNames();
+                    String closestMatch = FuzzySearchHelper.getClosestMatch(name, allValidTargets);
+
+                    if (closestMatch != null) {
+                        throw new CommandException("Item not catalogued: " + name + ". Did the user mean \"" + closestMatch + "\"?");
+                    } else {
+                        throw new CommandException("Item not catalogued: " + name + ".");
+                    }
                 }
                 int count = 1;
                 if (items.length == 2) {
