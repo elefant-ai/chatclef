@@ -10,6 +10,7 @@ import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.player2api.status.AgentStatus;
 import adris.altoclef.player2api.status.StatusUtils;
 import adris.altoclef.player2api.status.WorldStatus;
+import adris.altoclef.player2api.ConversationHistory;
 import com.google.gson.JsonObject;
 
 import java.util.Map;
@@ -27,8 +28,8 @@ public class AICommandBridge {
 
     public static String initialPrompt = """
             General Instructions:
-            You are an AI friend of the user. You can chat with them about Minecraft and life.
-            You can also do things in the game by using the valid commands.
+            You are an AI friend of the user in Minecraft. You can provide Minecraft guides, answer questions, and chat as a friend.
+            You can also do things in the game by using the valid commands when asked.
             If there is something you want to do but can't do it with the commands, you can ask the user to do it.
 
             You take the personality of the following character:
@@ -60,8 +61,6 @@ public class AICommandBridge {
             
             Valid Commands:
             {{validCommands}}
-
-
             """;
     private CommandExecutor cmdExecutor = null;
     private AltoClef mod = null;
@@ -104,7 +103,7 @@ public class AICommandBridge {
                     sender, messageType, distance);
             if (sender != null && !Objects.equals(sender, receiver)) {
                 String wholeMessage = "Other players: [" + sender + "] " + message;
-                addMessageToQueue(wholeMessage);
+                addMessageToQueue(wholeMessage + "| Remember to roleplay as " + this.character.name);
             }
         });
     }
@@ -215,13 +214,13 @@ public class AICommandBridge {
                         if (messageQueue.isEmpty() && !mod.isStopping) {
                             // on finish
                             addMessageToQueue(String.format(
-                                    "Command feedback: %s finished running. What shall we do next? If no new action is needed to finish user's request, generate empty command `\"\"`.",
+                                    "Command feedback: %s finished running. What shall we do next? If no new action is needed to finish user's request, generate empty command `\"\"`." + "| Remember to roleplay as " + this.character.name,
                                     commandResponse));
                         }
                     }, (err) -> {
                         // on error
                         addMessageToQueue(
-                                String.format("Command feedback: %s FAILED. The error was %s.",
+                                String.format("Command feedback: %s FAILED. The error was %s." + "| Remember to roleplay as " + this.character.name,
                                         commandResponse, err.getMessage()));
                     });
                 }
@@ -241,7 +240,7 @@ public class AICommandBridge {
         llmThread.submit(() -> {
             updateInfo();
             addMessageToQueue(
-                    character.greetingInfo + " IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, DO NOT SEND A COMMAND!!");
+                    character.greetingInfo + " IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, DO NOT SEND A COMMAND!!" + "| Remember to roleplay as " + this.character.name);
         });
     }
 
@@ -276,6 +275,10 @@ public class AICommandBridge {
         return _enabled;
     }
 
+    public Character getCharacter() {
+        return character;
+    }
+
     public void setPlayerMode(boolean playermode) {
         _playermode = playermode;
     }
@@ -297,11 +300,11 @@ public class AICommandBridge {
                 return;
             }
             if (result.length() == 0) {
-                addMessageToQueue(String.format("The user tried to send a STT message, but it was not picked up."));
+                addMessageToQueue("The user tried to send a STT message, but it was not picked up." + "| Remember to roleplay as " + this.character.name);
                 Debug.logUserMessage("Could not hear user message.");
                 return;
             }
-            addMessageToQueue(String.format("User: %s", result));
+            addMessageToQueue(String.format("User: %s", result + "| Remember to roleplay as " + this.character.name));
             // if (getPlayerMode()) {
             // } else {
             Debug.logUserMessage(result);

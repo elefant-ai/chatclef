@@ -117,18 +117,23 @@ public class Player2APIService {
 
             JsonObject firstCharacter = charactersArray.get(0).getAsJsonObject();
 
-            String name = Utils.getStringJsonSafely(firstCharacter, "short_name");
+            String name = Utils.getStringJsonSafely(firstCharacter, "name");
             if (name == null) {
+                throw new Exception("Character is missing 'name'.");
+            }
+
+            String shortName = Utils.getStringJsonSafely(firstCharacter, "short_name");
+            if (shortName == null) {
                 throw new Exception("Character is missing 'short_name'.");
             }
 
             String greeting = Utils.getStringJsonSafely(firstCharacter, "greeting");
             String description = Utils.getStringJsonSafely(firstCharacter, "description");
             String[] voiceIds = Utils.getStringArrayJsonSafely(firstCharacter, "voice_ids");
-            return new Character(name, greeting, description, voiceIds);
+            return new Character(name, shortName, greeting, description, voiceIds);
         } catch (Exception e) {
             System.err.println("Warning, getSelectedCharacter failed, reverting to default. Error message: " + e.getMessage());
-            return new Character("AI agent", "Greetings", "You are a helpful AI Agent", new String [0]);
+            return new Character("AI agent", "AI", "Greetings", "You are a helpful AI Agent", new String [0]);
         }
     }
 
