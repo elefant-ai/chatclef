@@ -18,18 +18,20 @@ public class ConversationHistory {
     private final List<JsonObject> conversationHistory = new ArrayList<>();
     private final Path historyFile;
     private boolean loadedFromFile = false;
-    private static final int MAX_HISTORY = 64;
-    private static final int SUMMARY_COUNT = 48;
+    private static final int MAX_HISTORY = 16;
+    private static final int SUMMARY_COUNT = 10;
 
     /**
-     * Constructs conversation history tied to a specific character, naming the file accordingly.
+     * Constructs conversation history tied to a specific character, naming the file
+     * accordingly.
+     * 
      * @param initialSystemPrompt base system prompt
-     * @param characterName the full character name
-     * @param characterShortName the short identifier for the character
+     * @param characterName       the full character name
+     * @param characterShortName  the short identifier for the character
      */
     public ConversationHistory(String initialSystemPrompt, String characterName, String characterShortName) {
         Path configDir = FabricLoader.getInstance().getConfigDir();
-        String fileName = characterName.replaceAll("\\s+","_") + "_" + characterShortName + ".txt";
+        String fileName = characterName.replaceAll("\\s+", "_") + "_" + characterShortName + ".txt";
         this.historyFile = configDir.resolve(fileName);
 
         if (Files.exists(historyFile)) {
@@ -59,7 +61,8 @@ public class ConversationHistory {
     }
 
     /**
-     * Adds a new message to the history. Summarizes and persists when exceeding MAX_HISTORY.
+     * Adds a new message to the history. Summarizes and persists when exceeding
+     * MAX_HISTORY.
      */
     public void addHistory(JsonObject text, boolean doCutOff) {
         conversationHistory.add(text);
@@ -70,10 +73,11 @@ public class ConversationHistory {
             if (summary == "") {
                 // 0th index is always system prompt
                 conversationHistory.remove(1);
-            }else{
+            } else {
                 JsonObject systemPrompt = conversationHistory.get(0);
                 int tailStart = conversationHistory.size() - (MAX_HISTORY - SUMMARY_COUNT);
-                List<JsonObject> tail = new ArrayList<>(conversationHistory.subList(tailStart, conversationHistory.size()));
+                List<JsonObject> tail = new ArrayList<>(
+                        conversationHistory.subList(tailStart, conversationHistory.size()));
 
                 conversationHistory.clear();
                 conversationHistory.add(systemPrompt);
@@ -83,8 +87,9 @@ public class ConversationHistory {
                 conversationHistory.add(summaryMsg);
                 conversationHistory.addAll(tail);
             }
-            if (historyFile != null) saveToFile();
-        }else if (doCutOff && conversationHistory.size()%8 == 0 && historyFile != null) {
+            if (historyFile != null)
+                saveToFile();
+        } else if (doCutOff && conversationHistory.size() % 8 == 0 && historyFile != null) {
             saveToFile();
         }
     }
@@ -93,21 +98,23 @@ public class ConversationHistory {
      * Calls LLM to generate a concise summary of provided messages.
      */
     private String summarizeHistory(List<JsonObject> messages) {
-        String summarizationPrompt = 
-        """
-            Our AI agent that has been chatting with user and playing minecraft.
-            Update agent's memory by summarizing the following conversation in the next response.
-            Response Format:
-            Always respond with JSON containing summary:
-            {\n  \"summary\": \"...\"\n}
-            Prioritize preserving important facts, things user asked agent to remember, useful tips.
-            Do not record stats, inventory, code or docs; limit to 500 chars.
-        """;
+        String summarizationPrompt = """
+                    Our AI agent that has been chatting with user and playing minecraft.
+                    Update agent's memory by summarizing the following conversation in the next response.
+
+                    Use natural language, not JSON format.
+
+                    Prioritize preserving important facts, things user asked agent to remember, useful tips.
+                    Do not record stats, inventory, code or docs; limit to 500 chars.
+                """;
         ConversationHistory temp = new ConversationHistory(summarizationPrompt);
-        for (JsonObject msg : messages) temp.addHistory(msg.deepCopy(), false);
-        try{
-            JsonObject resp = Player2APIService.completeConversation(temp);
-            return Utils.getStringJsonSafely(resp, "summary");
+        for (JsonObject msg : messages)
+            temp.addHistory(Utils.deepCopy(msg), false);
+
+        // temp.addUserMessage("Now return the summary.");
+        try {
+            String resp = Player2APIService.completeConversationToString(temp);
+            return resp;
         } catch (Exception e) {
             e.printStackTrace();
             System.err.println("Error communicating with API");
@@ -137,7 +144,8 @@ public class ConversationHistory {
         try (BufferedReader reader = Files.newBufferedReader(historyFile)) {
             String line;
             while ((line = reader.readLine()) != null) {
-                JsonObject obj = JsonParser.parseString(line).getAsJsonObject();
+                // JsonObject obj = JsonParser.parseString(line).getAsJsonObject();
+                JsonObject obj = Utils.parseCleanedJson(line);
                 // Trim content field if too long
                 if (obj.has("content")) {
                     String content = obj.get("content").getAsString();
@@ -213,7 +221,8 @@ public class ConversationHistory {
     /**
      * Wraps the latest user message with world/agent/debug status for LLM input.
      */
-    public ConversationHistory copyThenWrapLatestWithStatus(String worldStatus, String agentStatus, String altoclefStatusMsgs) {
+    public ConversationHistory copyThenWrapLatestWithStatus(String worldStatus, String agentStatus,
+            String altoclefStatusMsgs) {
         ConversationHistory copy = new ConversationHistory(
                 conversationHistory.get(0).get("content").getAsString());
         for (int i = 1; i < conversationHistory.size() - 1; i++) {

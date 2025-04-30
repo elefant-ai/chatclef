@@ -111,7 +111,6 @@ public class Utils {
     }
     public static JsonObject deepCopy(JsonObject original) {
         JsonParser parser = new JsonParser();
-
         return parser.parse(original.toString()).getAsJsonObject();
     }
 }

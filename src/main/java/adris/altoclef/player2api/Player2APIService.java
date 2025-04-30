@@ -73,14 +73,12 @@ public class Player2APIService {
     public static JsonObject completeConversation(ConversationHistory conversationHistory) throws Exception {
         JsonObject requestBody = new JsonObject();
         JsonArray messagesArray = new JsonArray();
-
         for (JsonObject msg : conversationHistory.getListJSON()) {
             messagesArray.add(msg);
         }
 
         requestBody.add("messages", messagesArray);
         Map<String, JsonElement> responseMap = sendRequest("/v1/chat/completions", true, requestBody);
-
         if (responseMap.containsKey("choices")) {
             JsonArray choices = responseMap.get("choices").getAsJsonArray();
 
@@ -90,6 +88,30 @@ public class Player2APIService {
                 if (messageObject != null && messageObject.has("content")) {
                     String content = messageObject.get("content").getAsString();
                     return Utils.parseCleanedJson(content);
+                }
+            }
+        }
+
+        throw new Exception("Invalid response format: " + responseMap.toString());
+    }
+    public static String completeConversationToString(ConversationHistory conversationHistory) throws Exception {
+        JsonObject requestBody = new JsonObject();
+        JsonArray messagesArray = new JsonArray();
+        for (JsonObject msg : conversationHistory.getListJSON()) {
+            messagesArray.add(msg);
+        }
+
+        requestBody.add("messages", messagesArray);
+        Map<String, JsonElement> responseMap = sendRequest("/v1/chat/completions", true, requestBody);
+        if (responseMap.containsKey("choices")) {
+            JsonArray choices = responseMap.get("choices").getAsJsonArray();
+
+            if (choices.size() != 0) {
+                JsonObject messageObject = choices.get(0).getAsJsonObject().getAsJsonObject("message");
+
+                if (messageObject != null && messageObject.has("content")) {
+                    String content = messageObject.get("content").getAsString();
+                    return content;
                 }
             }
         }
