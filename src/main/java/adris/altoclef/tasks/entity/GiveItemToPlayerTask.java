@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.entity;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.BotBehaviour;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.movement.FollowPlayerTask;
@@ -47,6 +48,11 @@ public class GiveItemToPlayerTask extends Task {
     protected void onStart() {
         droppingItems = false;
         throwTarget.clear();
+
+        BotBehaviour botBehaviour = AltoClef.getInstance().getBehaviour();
+
+        botBehaviour.push();
+        botBehaviour.addProtectedItems(ItemTarget.getMatches(targets));
     }
 
     @Override
@@ -61,7 +67,8 @@ public class GiveItemToPlayerTask extends Task {
         Optional<Vec3d> lastPos = mod.getEntityTracker().getPlayerMostRecentPosition(playerName);
 
         if (lastPos.isEmpty()) {
-            setDebugState("No player found/detected. Doing nothing until player loads into render distance.");
+            String nearbyUsernames = String.join(",", mod.getEntityTracker().getAllLoadedPlayerUsernames());
+            fail("No user in render distance found with username \"" + this.playerName + "\". Maybe this was a typo or there is a user with a similar name around? Nearby users: [" + nearbyUsernames + "].");
             return null;
         }
         Vec3d targetPos = lastPos.get().add(0, 0.2f, 0);
@@ -116,25 +123,34 @@ public class GiveItemToPlayerTask extends Task {
             return resourceTask;
         }
 
-        if (targetPos.isInRange(mod.getPlayer().getPos(), 1.5)) {
+        if (targetPos.isInRange(mod.getPlayer().getPos(), 4)) {
             if (!mod.getEntityTracker().isPlayerLoaded(playerName)) {
-                mod.logWarning("Failed to get to player \"" + playerName + "\". We moved to where we last saw them but now have no idea where they are.");
-                stop();
+                String nearbyUsernames = String.join(",", mod.getEntityTracker().getAllLoadedPlayerUsernames());
+                fail("Failed to get to player \"" + this.playerName + "\". We moved to where we last saw them but now have no idea where they are. Nearby players: [" + nearbyUsernames + "]");
                 return null;
             }
-            droppingItems = true;
-            throwTarget.addAll(Arrays.asList(targets));
 
-            _throwTimeout.reset();
+            var p = mod.getEntityTracker().getPlayerEntity(playerName).get();
+
+            // We must be At or ABOVE the player (or super close)
+            if (p.getBlockPos().getY() <= mod.getPlayer().getBlockPos().getY() || p.getPos().distanceTo(mod.getPlayer().getPos()) <= 0.5) {
+                // We must be able to SEE the player we're dropping to
+                if (LookHelper.seesPlayer(p, mod.getPlayer(), 6)) {
+                    droppingItems = true;
+                    throwTarget.addAll(Arrays.asList(targets));
+        
+                    _throwTimeout.reset();    
+                }
+            }
         }
 
         setDebugState("Going to player...");
-        return new FollowPlayerTask(playerName);
+        return new FollowPlayerTask(playerName, 0.5);
     }
 
     @Override
     protected void onStop(Task interruptTask) {
-
+        AltoClef.getInstance().getBehaviour().pop();
     }
 
     @Override

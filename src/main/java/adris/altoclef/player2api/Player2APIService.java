@@ -117,18 +117,23 @@ public class Player2APIService {
 
             JsonObject firstCharacter = charactersArray.get(0).getAsJsonObject();
 
-            String name = Utils.getStringJsonSafely(firstCharacter, "short_name");
+            String name = Utils.getStringJsonSafely(firstCharacter, "name");
             if (name == null) {
+                throw new Exception("Character is missing 'name'.");
+            }
+
+            String shortName = Utils.getStringJsonSafely(firstCharacter, "short_name");
+            if (shortName == null) {
                 throw new Exception("Character is missing 'short_name'.");
             }
 
             String greeting = Utils.getStringJsonSafely(firstCharacter, "greeting");
             String description = Utils.getStringJsonSafely(firstCharacter, "description");
             String[] voiceIds = Utils.getStringArrayJsonSafely(firstCharacter, "voice_ids");
-            return new Character(name, greeting, description, voiceIds);
+            return new Character(name, shortName, greeting, description, voiceIds);
         } catch (Exception e) {
             System.err.println("Warning, getSelectedCharacter failed, reverting to default. Error message: " + e.getMessage());
-            return new Character("AI agent", "Greetings", "You are a helpful AI Agent", new String [0]);
+            return new Character("AI agent", "AI", "Greetings", "You are a helpful AI Agent", new String [0]);
         }
     }
 
@@ -157,22 +162,22 @@ public class Player2APIService {
         try {
             sendRequest("/v1/stt/start", true, requestBody);
         } catch (Exception e) {
-            System.err.println("Error in startSST: " + e.getMessage());
+            System.err.println("[Player2APIService/startSTT]: Error" + e.getMessage());
         }
     }
 
     public static String stopSTT () {
         try{
             Map<String, JsonElement> responseMap = sendRequest("/v1/stt/stop", true, null);
-            if(!responseMap.containsKey("message")){
-                throw new Exception("Could not find messages in response");
+            if(!responseMap.containsKey("text")){
+                throw new Exception("Could not find key 'text' in response");
             }
-            return responseMap.get("message").getAsString();
+            return responseMap.get("text").getAsString();
         } catch (Exception e) {
             // handle timeout err here?
             return e.getMessage();
         }
-    }
+    } 
 
     public static void sendHeartbeat(){
         try{

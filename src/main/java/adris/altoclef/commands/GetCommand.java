@@ -15,7 +15,7 @@ import adris.altoclef.util.ItemTarget;
 public class GetCommand extends Command {
 
     public GetCommand() throws CommandException {
-        super("get", "Get a resource, Get / Craft an item. Examples: `get log 20` gets 20 logs, `get diamond_chestplate 1` gets 1 diamond chestplate.", new Arg<>(ItemList.class, "items"));
+        super("get", "Get a resource, Get / Craft an item in Minecraft. Examples: `get log 20` gets 20 logs, `get diamond_chestplate 1` gets 1 diamond chestplate. For equipments you have to specify the type of equipments like wooden, stone, iron, golden and diamond.", new Arg<>(ItemList.class, "items"));
     }
 
     private void getItems(AltoClef mod, ItemTarget... items) {

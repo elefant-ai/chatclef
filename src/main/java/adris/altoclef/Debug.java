@@ -55,7 +55,7 @@ public class Debug {
             AltoClef altoClef = AltoClef.getInstance();
             altoClef.getMessageSender().enqueueChat(message, null);
         } else {
-            message = String.format("\u00A71\u00A7l\u00A7o<%s>\u00A7r %s", character.name, message);
+            message = String.format("\u00A71\u00A7l\u00A7o<%s>\u00A7r %s", character.shortName, message);
             if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null) {
                 MinecraftClient.getInstance().player.sendMessage(Text.of(message), false);
             } else {

@@ -284,6 +284,12 @@ public class EntityTracker extends Tracker {
         }
     }
 
+    public List<String> getAllLoadedPlayerUsernames() {
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            return new ArrayList<>(playerMap.keySet());
+        }
+    }
+
     /**
      * Get where we last saw a player, if we saw them at all.
      *

@@ -12,8 +12,15 @@ public class FollowPlayerTask extends Task {
 
     private final String _playerName;
 
-    public FollowPlayerTask(String playerName) {
+    private final double _followDistance;
+
+    public FollowPlayerTask(String playerName, double followDistance) {
         _playerName = playerName;
+        _followDistance = followDistance;
+    }
+
+    public FollowPlayerTask(String playerName) {
+        this(playerName, 2);
     }
 
     @Override
@@ -44,7 +51,7 @@ public class FollowPlayerTask extends Task {
             // Go to last location
             return new GetToBlockTask(new BlockPos((int) target.x, (int) target.y, (int) target.z), false);
         }
-        return new GetToEntityTask(player.get(), 2);
+        return new GetToEntityTask(player.get(), _followDistance);
     }
 
     @Override
@@ -55,7 +62,7 @@ public class FollowPlayerTask extends Task {
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof FollowPlayerTask task) {
-            return task._playerName.equals(_playerName);
+            return task._playerName.equals(_playerName) && Math.abs(_followDistance - task._followDistance) < 0.1;
         }
         return false;
     }
