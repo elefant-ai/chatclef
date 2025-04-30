@@ -43,7 +43,9 @@ public class KillAura {
     public static void equipWeapon(AltoClef mod) {
         // Equip the best weapon that we would attack with
         Item bestWeapon = MobDefenseChain.getBestWeapon(mod);
-        mod.getSlotHandler().forceEquipItem(bestWeapon);
+        if (bestWeapon != null) {
+            mod.getSlotHandler().forceEquipItem(bestWeapon);
+        }
     }
 
     public void tickStart() {
