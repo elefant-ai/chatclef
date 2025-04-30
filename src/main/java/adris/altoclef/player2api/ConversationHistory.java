@@ -18,8 +18,8 @@ public class ConversationHistory {
     private final List<JsonObject> conversationHistory = new ArrayList<>();
     private final Path historyFile;
     private boolean loadedFromFile = false;
-    private static final int MAX_HISTORY = 16;
-    private static final int SUMMARY_COUNT = 10;
+    private static final int MAX_HISTORY = 64;
+    private static final int SUMMARY_COUNT = 48;
 
     /**
      * Constructs conversation history tied to a specific character, naming the file
