@@ -136,10 +136,10 @@ public class AICommandBridge {
         String newPrompt = Utils.replacePlaceholders(initialPrompt,
                 Map.of("characterDescription", character.description, "characterName", character.name, "validCommands",
                         validCommandsFormatted));
-        // System.out.println("New prompt: " + newPrompt);
+        System.out.println("New prompt: " + newPrompt);
 
         if (this.conversationHistory == null) {
-            this.conversationHistory = new ConversationHistory(newPrompt);
+            this.conversationHistory = new ConversationHistory(newPrompt, this.character.name, this.character.shortName);
         } else {
             this.conversationHistory.setBaseSystemPrompt(newPrompt);
         }
@@ -172,7 +172,6 @@ public class AICommandBridge {
         llmThread.submit(() -> {
             try {
                 llmProcessing = true;
-                updateInfo();
                 System.out.println("[AICommandBridge/processChatWithAPI]: Sending messages to LLM");
 
                 String agentStatus = AgentStatus.fromMod(mod).toString();
@@ -235,12 +234,24 @@ public class AICommandBridge {
         });
     }
 
+    /**
+     * Sends either the first-time greeting or a welcome-back message based on loaded history.
+     */
     public void sendGreeting() {
         System.out.println("Sending Greeting");
         llmThread.submit(() -> {
             updateInfo();
-            addMessageToQueue(
-                    character.greetingInfo + " IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, DO NOT SEND A COMMAND!!" + "| Remember to roleplay as " + this.character.name);
+            // If history was loaded from disk, send welcome back; otherwise, first-time greeting
+            if (conversationHistory.isLoadedFromFile()) {
+                addMessageToQueue(
+                    "You want to welcome user back. IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, DO NOT SEND A COMMAND!!| Remember to roleplay as " + this.character.name
+                );
+            } else {
+                addMessageToQueue(
+                    character.greetingInfo + " IMPORTANT: SINCE THIS IS THE FIRST MESSAGE, DO NOT SEND A COMMAND!!"
+                    + "| Remember to roleplay as " + this.character.name
+                );
+            }
         });
     }
 

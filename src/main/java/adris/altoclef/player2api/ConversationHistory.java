@@ -1,27 +1,153 @@
 package adris.altoclef.player2api;
 
-import com.google.gson.JsonObject;
-
-import adris.altoclef.player2api.status.ObjectStatus;
-
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+
+import adris.altoclef.player2api.status.ObjectStatus;
+import net.fabricmc.loader.api.FabricLoader;
+
 public class ConversationHistory {
     private final List<JsonObject> conversationHistory = new ArrayList<>();
+    private final Path historyFile;
+    private boolean loadedFromFile = false;
+    private static final int MAX_HISTORY = 12;
+    private static final int SUMMARY_COUNT = 6;
 
-    public ConversationHistory(String initialSystemPrompt) {
-        setBaseSystemPrompt(initialSystemPrompt); // Ensures system message always exists
-    }
+    /**
+     * Constructs conversation history tied to a specific character, naming the file accordingly.
+     * @param initialSystemPrompt base system prompt
+     * @param characterName the full character name
+     * @param characterShortName the short identifier for the character
+     */
+    public ConversationHistory(String initialSystemPrompt, String characterName, String characterShortName) {
+        Path configDir = FabricLoader.getInstance().getConfigDir();
+        String fileName = characterName.replaceAll("\\s+","_") + "_" + characterShortName + ".txt";
+        this.historyFile = configDir.resolve(fileName);
 
-    public void addHistory(JsonObject text, boolean doCutOff) {
-        conversationHistory.add(text);
-        if (conversationHistory.size() > 64 && doCutOff) {
-            // 0th index is always system prompt
-            conversationHistory.remove(1);
+        if (Files.exists(historyFile)) {
+            loadFromFile();
+            addSystemMessage("Welcome back!");
+            loadedFromFile = true;
+        } else {
+            setBaseSystemPrompt(initialSystemPrompt);
+            loadedFromFile = false;
         }
     }
 
+    /**
+     * Helper constructor for temporary summarization (no file persistence).
+     */
+    private ConversationHistory(String initialSystemPrompt) {
+        this.historyFile = null;
+        setBaseSystemPrompt(initialSystemPrompt);
+        loadedFromFile = false;
+    }
+
+    /**
+     * Whether this history was restored from disk.
+     */
+    public boolean isLoadedFromFile() {
+        return loadedFromFile;
+    }
+
+    /**
+     * Adds a new message to the history. Summarizes and persists when exceeding MAX_HISTORY.
+     */
+    public void addHistory(JsonObject text, boolean doCutOff) {
+        conversationHistory.add(text);
+        if (doCutOff && conversationHistory.size() > MAX_HISTORY) {
+            List<JsonObject> toSummarize = new ArrayList<>(conversationHistory.subList(1, SUMMARY_COUNT + 1));
+            String summary = summarizeHistory(toSummarize);
+
+            if (summary == "") {
+                // 0th index is always system prompt
+                conversationHistory.remove(1);
+            }else{
+                JsonObject systemPrompt = conversationHistory.get(0);
+                int tailStart = conversationHistory.size() - (MAX_HISTORY - SUMMARY_COUNT);
+                List<JsonObject> tail = new ArrayList<>(conversationHistory.subList(tailStart, conversationHistory.size()));
+
+                conversationHistory.clear();
+                conversationHistory.add(systemPrompt);
+                JsonObject summaryMsg = new JsonObject();
+                summaryMsg.addProperty("role", "assistant");
+                summaryMsg.addProperty("content", "Summary of earlier events: " + summary);
+                conversationHistory.add(summaryMsg);
+                conversationHistory.addAll(tail);
+            }
+            if (historyFile != null) saveToFile();
+        }
+    }
+
+    /**
+     * Calls LLM to generate a concise summary of provided messages.
+     */
+    private String summarizeHistory(List<JsonObject> messages) {
+        String summarizationPrompt = 
+        """
+            Our AI agent that has been chatting with user and playing minecraft.
+            Update agent's memory by summarizing the following conversation in the next response.
+            Response Format:
+            Always respond with JSON containing summary:
+            {\n  \"summary\": \"...\"\n}
+            Prioritize preserving important facts, things user asked agent to remember, useful tips.
+            Do not record stats, inventory, code or docs; limit to 500 chars.
+        """;
+        ConversationHistory temp = new ConversationHistory(summarizationPrompt);
+        for (JsonObject msg : messages) temp.addHistory(msg.deepCopy(), false);
+        try{
+            JsonObject resp = Player2APIService.completeConversation(temp);
+            return Utils.getStringJsonSafely(resp, "summary");
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.err.println("Error communicating with API");
+            return "";
+        }
+    }
+
+    /**
+     * Persist current history to disk (one JSON per line).
+     */
+    private void saveToFile() {
+        try (BufferedWriter writer = Files.newBufferedWriter(historyFile)) {
+            for (JsonObject msg : conversationHistory) {
+                writer.write(msg.toString());
+                writer.newLine();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Load history from disk into memory.
+     */
+    private void loadFromFile() {
+        List<JsonObject> loaded = new ArrayList<>();
+        try (BufferedReader reader = Files.newBufferedReader(historyFile)) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                loaded.add(JsonParser.parseString(line).getAsJsonObject());
+            }
+            conversationHistory.clear();
+            conversationHistory.addAll(loaded);
+        } catch (IOException e) {
+            e.printStackTrace();
+            conversationHistory.clear();
+        }
+    }
+
+    /**
+     * Adds a user message without triggering cutoff.
+     */
     public void addUserMessage(String userText) {
         JsonObject objectToAdd = new JsonObject();
         objectToAdd.addProperty("role", "user");
@@ -30,10 +156,7 @@ public class ConversationHistory {
     }
 
     /**
-     * Sets or updates the first system message (base system prompt).
-     * If there is no system message, it adds one at the start.
-     *
-     * @param newPrompt The new base system prompt.
+     * Sets or updates the base system prompt at index 0.
      */
     public void setBaseSystemPrompt(String newPrompt) {
         if (!conversationHistory.isEmpty() && "system".equals(conversationHistory.get(0).get("role").getAsString())) {
@@ -47,9 +170,7 @@ public class ConversationHistory {
     }
 
     /**
-     * Adds a new system message at the end of the conversation history.
-     *
-     * @param systemText The system message to add.
+     * Queues a system-level message without cutoff.
      */
     public void addSystemMessage(String systemText) {
         JsonObject objectToAdd = new JsonObject();
@@ -59,9 +180,7 @@ public class ConversationHistory {
     }
 
     /**
-     * Adds a new assistant message at the end of the conversation history.
-     *
-     * @param messageText The system message to add.
+     * Queues an assistant message and triggers cutoff logic.
      */
     public void addAssistantMessage(String messageText) {
         JsonObject objectToAdd = new JsonObject();
@@ -70,21 +189,22 @@ public class ConversationHistory {
         addHistory(objectToAdd, true);
     }
 
+    /**
+     * Exposes the raw conversation JSON list.
+     */
     public List<JsonObject> getListJSON() {
         return conversationHistory;
     }
 
-    // Wraps latest msg with status if it is a user msg (should be)
+    /**
+     * Wraps the latest user message with world/agent/debug status for LLM input.
+     */
     public ConversationHistory copyThenWrapLatestWithStatus(String worldStatus, String agentStatus, String altoclefStatusMsgs) {
         ConversationHistory copy = new ConversationHistory(
                 conversationHistory.get(0).get("content").getAsString());
-
-        // make deep copy
         for (int i = 1; i < conversationHistory.size() - 1; i++) {
             copy.addHistory(Utils.deepCopy(conversationHistory.get(i)), false);
         }
-
-        // add status to latest message
         if (conversationHistory.size() > 1) {
             JsonObject last = Utils.deepCopy(conversationHistory.get(conversationHistory.size() - 1));
             if ("user".equals(last.get("role").getAsString())) {
@@ -98,7 +218,6 @@ public class ConversationHistory {
             }
             copy.addHistory(last, false);
         }
-
         return copy;
     }
 
