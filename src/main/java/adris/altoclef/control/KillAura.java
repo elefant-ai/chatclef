@@ -20,7 +20,7 @@ import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.SwordItem;
+import net.minecraft.item.ToolItem;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.Vec3d;
 
@@ -44,10 +44,10 @@ public class KillAura {
         if (!invStacks.isEmpty()) {
             float handDamage = Float.NEGATIVE_INFINITY;
             for (ItemStack invStack : invStacks) {
-                if (invStack.getItem() instanceof SwordItem item) {
+                if (invStack.getItem() instanceof ToolItem item) {
                     float itemDamage = item.getMaterial().getAttackDamage();
                     Item handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
-                    if (handItem instanceof SwordItem handToolItem) {
+                    if (handItem instanceof ToolItem handToolItem) {
                         handDamage = handToolItem.getMaterial().getAttackDamage();
                     }
                     if (itemDamage > handDamage) {
@@ -164,7 +164,7 @@ public class KillAura {
         attack(mod, entity, false);
     }
 
-    private void attack(AltoClef mod, Entity entity, boolean equipSword) {
+    private void attack(AltoClef mod, Entity entity, boolean equipWeapon) {
         if (entity == null) return;
         if (!(entity instanceof FireballEntity)) {
             double xAim = entity.getX();
@@ -178,7 +178,7 @@ public class KillAura {
                 mod.getControllerExtras().attack(entity);
             }
             boolean canAttack;
-            if (equipSword) {
+            if (equipWeapon) {
                 equipWeapon(mod);
                 canAttack = true;
             } else {

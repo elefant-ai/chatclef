@@ -34,7 +34,7 @@ import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.item.SwordItem;
+import net.minecraft.item.ToolItem;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -321,12 +321,12 @@ public class MobDefenseChain extends SingleTaskChain {
             if (!toDealWithList.isEmpty()) {
 
                 // Depending on our weapons/armor, we may choose to straight up kill hostiles if we're not dodging their arrows.
-                SwordItem bestSword = getBestSword(mod);
+                ToolItem bestWeapon = getBestWeapon(mod);
 
                 int armor = mod.getPlayer().getArmor();
-                float damage = bestSword == null ? 0 : (bestSword.getMaterial().getAttackDamage()) + 1;
+                float damage = bestWeapon == null ? 0 : (bestWeapon.getMaterial().getAttackDamage()) + 1;
 
-                int shield = hasShield(mod) && bestSword != null ? 3 : 0;
+                int shield = hasShield(mod) && bestWeapon != null ? 3 : 0;
 
                 int canDealWith = (int) Math.ceil((armor * 3.6 / 20.0) + (damage * 0.8) + (shield));
 
@@ -375,14 +375,19 @@ public class MobDefenseChain extends SingleTaskChain {
         return mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
     }
 
-    private static SwordItem getBestSword(AltoClef mod) {
-        Item[] SWORDS = new Item[]{Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD,
-                Items.STONE_SWORD, Items.WOODEN_SWORD};
+    private static ToolItem getBestWeapon(AltoClef mod) {
+        Item[] WEAPONS = new Item[]{
+            Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD,
+                Items.STONE_SWORD, Items.WOODEN_SWORD, //
+            Items.NETHERITE_AXE, Items.DIAMOND_AXE, Items.IRON_AXE, Items.GOLDEN_AXE,
+                Items.STONE_AXE, Items.WOODEN_AXE
 
-        SwordItem bestSword = null;
-        for (Item item : SWORDS) {
+            };
+
+        ToolItem bestSword = null;
+        for (Item item : WEAPONS) {
             if (mod.getItemStorage().hasItem(item)) {
-                bestSword = (SwordItem) item;
+                bestSword = (ToolItem) item;
                 break;
             }
         }

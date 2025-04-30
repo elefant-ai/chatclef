@@ -1197,7 +1197,7 @@ public class BeatMinecraftTask extends Task {
             List<ItemStack> itemStacks = itemStorage.getItemStacksPlayerInventory(true);
             for (ItemStack itemStack : itemStacks) {
                 Item item = itemStack.getItem();
-                if (item instanceof SwordItem) {
+                if (item instanceof SwordItem || item instanceof AxeItem) {
                     mod.getSlotHandler().forceEquipItem(item);
                 }
             }

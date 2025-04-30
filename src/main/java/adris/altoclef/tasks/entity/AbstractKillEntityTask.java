@@ -8,7 +8,7 @@ import adris.altoclef.util.slots.PlayerSlot;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.SwordItem;
+import net.minecraft.item.ToolItem;
 
 import java.util.List;
 
@@ -39,12 +39,12 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
         Item bestItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
         float bestDamage = Float.NEGATIVE_INFINITY;
 
-        if (bestItem instanceof SwordItem handToolItem) {
+        if (bestItem instanceof ToolItem handToolItem) {
             bestDamage = handToolItem.getMaterial().getAttackDamage();
         }
 
         for (ItemStack invStack : invStacks) {
-            if (!(invStack.getItem() instanceof SwordItem item)) continue;
+            if (!(invStack.getItem() instanceof ToolItem item)) continue;
 
             float itemDamage = item.getMaterial().getAttackDamage();
 
