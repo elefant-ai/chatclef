@@ -43,9 +43,9 @@ public class ItemList {
                     String closestMatch = FuzzySearchHelper.getClosestMatchMinecraftItems(item, allValidTargets);
 
                     if (closestMatch != null) {
-                        throw new CommandException("Item not catalogued: " + item + ". Did the user mean \"" + closestMatch + "\"?");
+                        throw new CommandException("Item not catalogued: \"" + item + "\". Did the user mean \"" + closestMatch + "\"?");
                     } else {
-                        throw new CommandException("Item not catalogued: " + item + ".");
+                        throw new CommandException("Item not catalogued: \"" + item + "\".");
                     }
                 }
             }
@@ -62,9 +62,9 @@ public class ItemList {
                     String closestMatch = FuzzySearchHelper.getClosestMatchMinecraftItems(name, allValidTargets);
 
                     if (closestMatch != null) {
-                        throw new CommandException("Item not catalogued: " + name + ". Did the user mean \"" + closestMatch + "\"?");
+                        throw new CommandException("Item not catalogued: \"" + name + "\". Did the user mean \"" + closestMatch + "\"?");
                     } else {
-                        throw new CommandException("Item not catalogued: " + name + ".");
+                        throw new CommandException("Item not catalogued: \"" + name + "\".");
                     }
                 }
                 int count = 1;
