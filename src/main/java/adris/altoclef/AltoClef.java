@@ -25,6 +25,7 @@ import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
 import adris.altoclef.ui.ChatclefToggleButton;
 import adris.altoclef.ui.PlayerModeToggleButton;
+import adris.altoclef.ui.STTfeedback;
 import adris.altoclef.util.helpers.InputHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
@@ -134,7 +135,7 @@ public class AltoClef implements ModInitializer {
         sttKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.chatclef.sttKey",
                 InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_X,
+                GLFW.GLFW_KEY_Z, // by default, the key is Z
                 "category.chatclef.keybindings"));
 
         net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -142,9 +143,11 @@ public class AltoClef implements ModInitializer {
             long now = System.nanoTime();
             if (isCurrentlyPressed && !wasPressedLastFrame) {
                 System.out.println("PRESSED KEY" + now);
+                STTfeedback.setListening();
                 aiBridge.startSTT();
             } else if (!isCurrentlyPressed && wasPressedLastFrame) {
                 System.out.println("LET GO OF KEY" + now);
+                STTfeedback.setIdle();
                 aiBridge.stopSTT();
             }
 
@@ -231,7 +234,8 @@ public class AltoClef implements ModInitializer {
             } else if (this.aiBridge.getEnabled()) {
                 evt.cancel();
                 Debug.logUserMessage(line);
-                this.aiBridge.addMessageToQueue("User: " + line + "| Remember to roleplay as " + this.aiBridge.getCharacter().name);
+                this.aiBridge.addMessageToQueue(
+                        "User: " + line + "| Remember to roleplay as " + this.aiBridge.getCharacter().name);
             }
         });
 
@@ -344,6 +348,7 @@ public class AltoClef implements ModInitializer {
 
         ChatclefToggleButton.render(context, context.getMatrices(), getAiBridge().getEnabled());
         PlayerModeToggleButton.render(context, context.getMatrices(), getAiBridge().getPlayerMode());
+        STTfeedback.render(context, context.getMatrices(), sttKeybind);
     }
 
     private void onLogin() {
