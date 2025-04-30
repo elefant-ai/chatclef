@@ -375,7 +375,7 @@ public class MobDefenseChain extends SingleTaskChain {
         return mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
     }
 
-    private static ToolItem getBestWeapon(AltoClef mod) {
+    public static ToolItem getBestWeapon(AltoClef mod) {
         Item[] WEAPONS = new Item[]{
             Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD,
                 Items.STONE_SWORD, Items.WOODEN_SWORD, //
