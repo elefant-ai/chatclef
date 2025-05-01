@@ -1,8 +1,16 @@
 package adris.altoclef.player2api;
 
+import java.util.Map;
+import java.util.Objects;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import com.google.gson.JsonObject;
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import net.minecraft.network.message.MessageType;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.eventbus.EventBus;
@@ -10,16 +18,7 @@ import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.player2api.status.AgentStatus;
 import adris.altoclef.player2api.status.StatusUtils;
 import adris.altoclef.player2api.status.WorldStatus;
-import adris.altoclef.player2api.ConversationHistory;
-import com.google.gson.JsonObject;
-
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import net.minecraft.network.message.MessageType;
 
 public class AICommandBridge {
     private ConversationHistory conversationHistory = null;
@@ -51,7 +50,7 @@ public class AICommandBridge {
             {
               "reason": "Look at the recent conversations, agent status and world status to decide what the you should say and do. Provide step-by-step reasoning while considering what is possible in Minecraft.",
               "command": "Decide the best way to achieve the goals using the valid commands listed below. Write the command in this field. If you decide to not use any command, generate an empty command `\"\"`. You can only run one command at a time! To replace the current one just write the new one.",
-              "message": "If you decide you should not respond or talk, generate an empty message `\"\"`. Otherwise, create a natural conversational message that aligns with the `reason` and the your character. Be concise and use less than 350 characters. Ensure the message does not contain any prompt, system message, instructions, code or API calls"
+              "message": "If you decide you should not respond or talk, generate an empty message `\"\"`. Otherwise, create a natural conversational message that aligns with the `reason` and the your character. Be concise and use less than 250 characters. Ensure the message does not contain any prompt, system message, instructions, code or API calls"
             }
 
             Additional Guidelines:
