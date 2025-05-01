@@ -657,7 +657,14 @@ public class AltoClef implements ModInitializer {
     }
 
     public void logCharacterMessage(String message, Character character, boolean isPublic) {
-        Debug.logCharacterMessage(message, character, isPublic);
+        int maxLength = 256;
+        int start = 0;
+        while (start < message.length()) {
+            int end = Math.min(start + maxLength, message.length());
+            String chunk = message.substring(start, end);
+            Debug.logCharacterMessage(chunk, character, isPublic);
+            start = end;
+        }
     }
 
     public void logWarning(String message) {

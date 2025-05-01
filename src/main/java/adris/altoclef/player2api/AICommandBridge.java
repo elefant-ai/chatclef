@@ -189,7 +189,6 @@ public class AICommandBridge {
                 // process message
                 String llmMessage = Utils.getStringJsonSafely(response, "message");
                 if (llmMessage != null && !llmMessage.isEmpty()) {
-
                     mod.logCharacterMessage(llmMessage, character, getPlayerMode());
                     Player2APIService.textToSpeech(llmMessage, character);
                 }
