@@ -1,5 +1,10 @@
 package adris.altoclef.commands.random;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.commands.BlockScanner;
 import adris.altoclef.commandsystem.Arg;
@@ -9,10 +14,7 @@ import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.util.helpers.FuzzySearchHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.List;
+import net.minecraft.util.math.BlockPos;
 
 public class ScanCommand extends Command {
 
@@ -51,7 +53,12 @@ public class ScanCommand extends Command {
         }
 
         BlockScanner blockScanner = mod.getBlockScanner();
-        mod.log(blockScanner.getNearestBlock(block,mod.getPlayer().getPos())+"");
+        Optional<BlockPos> p = blockScanner.getNearestBlock(block,mod.getPlayer().getPos());
+        if (p.isPresent()) {
+            mod.log("Closest " + blockStr + ": " + p.get().toString());
+        } else {
+            mod.log("No blocks of type " + blockStr + " found nearby.");
+        }
         finish();
     }
 
