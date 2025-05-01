@@ -5,23 +5,25 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.math.MatrixStack;
 import adris.altoclef.multiversion.DrawContextWrapper;
+import adris.altoclef.player2api.ChatclefConfigPersistantState;
 
 public class STTfeedback {
     public enum Phase {
         Idle, Listening, Hint
     }
 
-    public static Phase phase = Phase.Hint;
+    public static Phase phase = ChatclefConfigPersistantState.isSttHintEnabled() ? Phase.Hint : Phase.Idle;
 
     public static void setIdle() {
+        if(phase == Phase.Hint){
+            ChatclefConfigPersistantState.updateSttHint(false);
+        }
         phase = Phase.Idle;
     }
 
     public static void setListening() {
         phase = Phase.Listening;
     }
-
-
 
     public static void render(DrawContextWrapper ctx, MatrixStack matrices, KeyBinding sttKeybind) {
         MinecraftClient client = MinecraftClient.getInstance();

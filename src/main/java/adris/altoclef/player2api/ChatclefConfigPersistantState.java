@@ -12,7 +12,7 @@ public class ChatclefConfigPersistantState {
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
     private static final Path CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("chatclef_config.json");
 
-    private boolean sttHintEnabled = false;
+    private boolean sttHintEnabled = true;
 
     public static boolean isSttHintEnabled() {
         return instance().sttHintEnabled;
