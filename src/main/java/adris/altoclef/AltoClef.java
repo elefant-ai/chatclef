@@ -662,7 +662,10 @@ public class AltoClef implements ModInitializer {
         while (start < message.length()) {
             int end = Math.min(start + maxLength, message.length());
             String chunk = message.substring(start, end);
-            Debug.logCharacterMessage(chunk, character, isPublic);
+            if (chunk.length() > 0 && !chunk.isBlank()) {
+                //only send if not whitespace and is not empty 
+                Debug.logCharacterMessage(chunk, character, isPublic);
+            }
             start = end;
         }
     }

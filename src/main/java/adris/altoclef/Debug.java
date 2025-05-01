@@ -2,6 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.player2api.AICommandBridge;
 import adris.altoclef.player2api.Character;
+import adris.altoclef.ui.MessagePriority;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.text.Text;
@@ -53,7 +54,7 @@ public class Debug {
     public static void logCharacterMessage(String message, Character character, boolean isPublic) {
         if (isPublic) {
             AltoClef altoClef = AltoClef.getInstance();
-            altoClef.getMessageSender().enqueueChat(message, null);
+            altoClef.getMessageSender().enqueueChat(message, MessagePriority.TIMELY);
         } else {
             message = String.format("\u00A71\u00A7l\u00A7o<%s>\u00A7r %s", character.shortName, message);
             if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null) {
