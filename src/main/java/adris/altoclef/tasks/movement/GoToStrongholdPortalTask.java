@@ -37,8 +37,9 @@ public class GoToStrongholdPortalTask extends Task {
             If there search it
          */
         if (_strongholdCoordinates == null) {
+            // DO NOT do this (this is a terrible idea! breaks crafting!)
             // in case any screen is open, prevents from getting stuck
-            StorageHelper.closeScreen();
+            // StorageHelper.closeScreen();
 
             _strongholdCoordinates = _locateCoordsTask.getStrongholdCoordinates().orElse(null);
             if (_strongholdCoordinates == null) {
