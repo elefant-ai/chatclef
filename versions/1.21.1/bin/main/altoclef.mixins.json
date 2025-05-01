@@ -33,7 +33,10 @@
     "LoadChunkMixin",
     "MixinLocalPlayer",
     "PlayerCollidesWithEntityMixin",
-    "SimpleOptionMixin"
+    "PlayerDamageMixin",
+    "SimpleOptionMixin",
+    "EntityAnimationSwungMixin",
+    "MobDeathMixin"
   ],
   "injectors": {
     "defaultRequire": 1

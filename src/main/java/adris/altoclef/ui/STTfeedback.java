@@ -15,13 +15,15 @@ public class STTfeedback {
     public static Phase phase = ChatclefConfigPersistantState.isSttHintEnabled() ? Phase.Hint : Phase.Idle;
 
     public static void setIdle() {
-        if(phase == Phase.Hint){
-            ChatclefConfigPersistantState.updateSttHint(false);
-        }
+
         phase = Phase.Idle;
     }
 
     public static void setListening() {
+        if (phase == Phase.Hint) {
+            System.out.println("Running updateSttHint");
+            ChatclefConfigPersistantState.updateSttHint(false);
+        }
         phase = Phase.Listening;
     }
 
