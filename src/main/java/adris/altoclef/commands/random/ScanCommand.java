@@ -38,11 +38,13 @@ public class ScanCommand extends Command {
 
         if (block == null) {
             mod.logWarning("Block named: " + blockStr + " not found :(");
+            finish();
             return;
         }
 
         BlockScanner blockScanner = mod.getBlockScanner();
         mod.log(blockScanner.getNearestBlock(block,mod.getPlayer().getPos())+"");
+        finish();
     }
 
 }
