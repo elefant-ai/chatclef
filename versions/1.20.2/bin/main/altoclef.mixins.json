@@ -1,0 +1,44 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "adris.altoclef.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "AbstractFurnaceScreenHandlerAccessor",
+    "AxeItemAccessor",
+    "BlockModifiedByPlayerMixin",
+    "ClientBlockBreakAccessor",
+    "ClientConnectionAccessor",
+    "ClientInteractWithBlockMixin",
+    "ClientUIMixin",
+    "DeathScreenAccessor",
+    "EntityAccessor",
+    "GameOverlayMixin",
+    "MiningToolItemAccessor",
+    "MovementHelperMixin",
+    "PersistentProjectileEntityAccessor",
+    "PortalManagerAccessor",
+    "SlotClickMixin",
+    "ToolSetMixin",
+    "WorldBlockModifiedMixin"
+  ],
+  "client": [
+    "ChatInputMixin",
+    "ChatReadMixin",
+    "ClientBlockBreakMixin",
+    "ClientOpenScreenMixin",
+    "ClientTickMixin",
+    "DrawableHelperInvoker",
+    "EntryMixin",
+    "LoadChunkMixin",
+    "MixinLocalPlayer",
+    "PlayerCollidesWithEntityMixin",
+    "PlayerDamageMixin",
+    "SimpleOptionMixin",
+    "EntityAnimationSwungMixin",
+    "MobDeathMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
