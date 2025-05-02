@@ -120,6 +120,10 @@ public class MobDefenseChain extends SingleTaskChain {
     @Override
     public float getPriority() {
         cachedLastPriority = getPriorityInner();
+        if (getCurrentTask() == null) {
+            // We're doing nothing! Don't run.
+            cachedLastPriority = 0;
+        }
         prevHealth = AltoClef.getInstance().getPlayer().getHealth();
         return cachedLastPriority;
     }
