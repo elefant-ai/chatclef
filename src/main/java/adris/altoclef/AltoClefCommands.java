@@ -13,13 +13,12 @@ import adris.altoclef.commands.HeroCommand;
 import adris.altoclef.commands.IdleCommand;
 import adris.altoclef.commands.LocateStructureCommand;
 import adris.altoclef.commands.MeatCommand;
-import adris.altoclef.commands.PauseCommand;
 import adris.altoclef.commands.ReloadSettingsCommand;
 import adris.altoclef.commands.SetAIBridgeEnabledCommand;
 import adris.altoclef.commands.SetGammaCommand;
 import adris.altoclef.commands.StashCommand;
 import adris.altoclef.commands.StopCommand;
-import adris.altoclef.commands.UnPauseCommand;
+import adris.altoclef.commands.ResetMemoryCommand;
 import adris.altoclef.commands.random.ScanCommand;
 import adris.altoclef.commandsystem.CommandException;
 
@@ -40,12 +39,11 @@ public class AltoClefCommands {
                 new HeroCommand(),
                 new LocateStructureCommand(),
                 new StopCommand(),
-                new PauseCommand(),
-                new UnPauseCommand(),
                 new SetGammaCommand(),
                 new FoodCommand(),
                 new MeatCommand(),
                 new ReloadSettingsCommand(),
+                new ResetMemoryCommand(),
                 new GamerCommand(),
                 new FollowCommand(),
                 new GiveCommand(),

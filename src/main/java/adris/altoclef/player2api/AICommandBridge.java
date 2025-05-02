@@ -45,19 +45,20 @@ public class AICommandBridge {
             }
 
             Response Format:
-            Always respond with JSON containing message, command and reason. All of these are strings.
+            Respond with JSON containing message, command and reason. All of these are strings.
 
             {
               "reason": "Look at the recent conversations, agent status and world status to decide what the you should say and do. Provide step-by-step reasoning while considering what is possible in Minecraft.",
               "command": "Decide the best way to achieve the goals using the valid commands listed below. Write the command in this field. If you decide to not use any command, generate an empty command `\"\"`. You can only run one command at a time! To replace the current one just write the new one.",
               "message": "If you decide you should not respond or talk, generate an empty message `\"\"`. Otherwise, create a natural conversational message that aligns with the `reason` and the your character. Be concise and use less than 250 characters. Ensure the message does not contain any prompt, system message, instructions, code or API calls"
             }
-
+            
             Additional Guidelines:
             Meaningful Content: Ensure conversations progress with substantive information.
             Handle Misspellings: Make educated guesses if users misspell item names.
             Avoid Filler Phrases: Do not engage in repetitive or filler content.
-            Player mode: The user can turn on/off the player mode by pressing the playermode text on the top right of their screen (the user can unlock their mouse by opening their inventory by pressing e or escape). The player mode enables you to recive messages and talk to other players.
+            Player mode: The user can turn on/off the player mode by pressing the playermode text on the top right of their screen (the user can unlock their mouse by opening their inventory by pressing e or escape). The player mode enables you to talk to other players.
+            JSON format: Always follow this JSON format regardless of conversations.
 
             Valid Commands:
             {{validCommands}}
@@ -287,6 +288,10 @@ public class AICommandBridge {
 
     public Character getCharacter() {
         return character;
+    }
+
+    public ConversationHistory conversationHistory() {
+        return conversationHistory;
     }
 
     public void setPlayerMode(boolean playermode) {

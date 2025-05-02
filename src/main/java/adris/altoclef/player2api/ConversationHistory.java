@@ -256,4 +256,19 @@ public class ConversationHistory {
         sb.append("}");
         return sb.toString();
     }
+
+    public void clear() {
+        if (!conversationHistory.isEmpty()) {
+            JsonObject systemPrompt = conversationHistory.get(0);
+            conversationHistory.clear();
+            conversationHistory.add(systemPrompt);
+        }
+        if (historyFile != null) {
+            try {
+                Files.deleteIfExists(historyFile);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }
