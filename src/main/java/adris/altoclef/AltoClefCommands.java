@@ -34,7 +34,8 @@ public class AltoClefCommands {
                 new GetCommand(),
                 new EquipCommand(),
                 new DepositCommand(),
-                new StashCommand(),
+                // disabled: not useful to LLM agent
+                // new StashCommand(),
                 new GotoCommand(),
                 new IdleCommand(),
                 new HeroCommand(),

@@ -27,7 +27,9 @@ import java.util.stream.Stream;
  */
 public class StoreInAnyContainerTask extends Task {
 
-    private static final Block[] TO_SCAN = Stream.concat(Arrays.stream(new Block[]{Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.BARREL}), Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.SHULKER_BOXES))).toArray(Block[]::new);
+    private static final int TOO_FAR_RANGE = 50;
+    private static final int TOO_FAR_RANGE_EXTRA = 70;
+
     private final ItemTarget[] _toStore;
     private final boolean _getIfNotPresent;
     private final HashSet<BlockPos> _dungeonChests = new HashSet<>();
@@ -100,7 +102,8 @@ public class StoreInAnyContainerTask extends Task {
             return true;
         };
 
-        if (mod.getBlockScanner().anyFound(validContainer, TO_SCAN)) {
+        Optional<BlockPos> closest = mod.getBlockScanner().getNearestBlock(StoreInContainerTask.CONTAINER_BLOCKS);
+        if (closest.isPresent() && (closest.get().isWithinDistance(mod.getPlayer().getPos(), TOO_FAR_RANGE) || (_currentChestTry != null && _currentChestTry.isWithinDistance(mod.getPlayer().getPos(), TOO_FAR_RANGE_EXTRA)))) {
 
             setDebugState("Going to container and depositing items");
 
@@ -120,12 +123,12 @@ public class StoreInAnyContainerTask extends Task {
                         return new StoreInContainerTask(blockPos, _getIfNotPresent, notStored);
                     },
                     validContainer,
-                    TO_SCAN);
+                    StoreInContainerTask.CONTAINER_BLOCKS);
         }
 
         _progressChecker.reset();
         // Craft + place chest nearby
-        for (Block couldPlace : TO_SCAN) {
+        for (Block couldPlace : StoreInContainerTask.CONTAINER_BLOCKS) {
             if (mod.getItemStorage().hasItem(couldPlace.asItem())) {
                 setDebugState("Placing container nearby");
                 return new PlaceBlockNearbyTask(canPlace -> {
