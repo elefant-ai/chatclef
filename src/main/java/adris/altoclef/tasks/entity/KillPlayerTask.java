@@ -26,6 +26,7 @@ public class KillPlayerTask extends AbstractKillEntityTask {
     protected Optional<Entity> getEntityTarget(AltoClef mod) {
 
         for (Entity entity : MinecraftClient.getInstance().world.getEntities()) {
+            if (!entity.isAlive()) continue;
             if (entity instanceof PlayerEntity) {
                 String playerName = entity.getName().getString().toLowerCase();
                 // System.out.println("GOT PLAYER ENTITY: " + playerName);
