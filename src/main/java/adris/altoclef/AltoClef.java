@@ -76,6 +76,7 @@ public class AltoClef implements ModInitializer {
     private SimpleChunkTracker chunkTracker;
     private MiscBlockTracker miscBlockTracker;
     private CraftingRecipeTracker craftingRecipeTracker;
+    private EntityStuckTracker entityStuckTracker;
     // Renderers
     private CommandStatusOverlay commandStatusOverlay;
     private AltoClefTickChart altoClefTickChart;
@@ -188,6 +189,7 @@ public class AltoClef implements ModInitializer {
         chunkTracker = new SimpleChunkTracker(this);
         miscBlockTracker = new MiscBlockTracker(this);
         craftingRecipeTracker = new CraftingRecipeTracker(trackerManager);
+        entityStuckTracker = new EntityStuckTracker(trackerManager);
 
         // Renderers
         commandStatusOverlay = new CommandStatusOverlay();
@@ -358,6 +360,8 @@ public class AltoClef implements ModInitializer {
 
     private void initializeBaritoneSettings() {
         getExtraBaritoneSettings().canWalkOnEndPortal(false);
+        // avoid block place on stuck entity
+        getExtraBaritoneSettings().avoidBlockPlace(entityStuckTracker::isBlockedByEntity);
         getClientBaritoneSettings().freeLook.value = false;
         getClientBaritoneSettings().overshootTraverse.value = false;
         getClientBaritoneSettings().allowOvershootDiagonalDescend.value = true;
