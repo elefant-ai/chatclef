@@ -84,7 +84,7 @@ public class BlockScanner {
         return blacklist.unreachable(pos);
     }
 
-    public List<BlockPos> getKnownLocations(Block... blocks) {
+    public List<BlockPos> getKnownLocationsIncludeUnreachable(Block... blocks) {
         List<BlockPos> locations = new LinkedList<>();
 
         for (Block block : blocks) {
@@ -92,8 +92,14 @@ public class BlockScanner {
 
             locations.addAll(trackedBlocks.get(block));
         }
-        locations.removeIf(this::isUnreachable);
 
+        return locations;
+
+    }
+
+    public List<BlockPos> getKnownLocations(Block... blocks) {
+        List<BlockPos> locations = getKnownLocationsIncludeUnreachable(blocks);
+        locations.removeIf(this::isUnreachable);
         return locations;
     }
 
