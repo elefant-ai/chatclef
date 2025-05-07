@@ -38,6 +38,18 @@ public class UserBlockRangeTracker extends Tracker {
     protected void updateState() {
         _dontBreakVoxels.clear();
         List<BlockPos> userBlocks = AltoClef.getInstance().getBlockScanner().getKnownLocationsIncludeUnreachable(USER_BLOCKS);
+        // filter out user blocks
+        // TODO: is this a bad idea for the tracker...
+        userBlocks.removeIf(bpos -> {
+            Block b = AltoClef.getInstance().getWorld().getBlockState(bpos).getBlock();
+            for (Block check : USER_BLOCKS) {
+                if (check == b) {
+                    return false;
+                }
+            }
+            return true;
+        });
+
         for (BlockPos userBlockPos : userBlocks) {
             Vec3i v = blockPosToVoxel(userBlockPos);
             for (int dx = -1; dx <= 1; ++dx) {
