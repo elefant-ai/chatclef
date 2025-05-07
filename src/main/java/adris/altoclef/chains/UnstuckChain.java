@@ -156,17 +156,6 @@ public class UnstuckChain extends SingleTaskChain {
 
         Baritone b = AltoClef.getInstance().getClientBaritone();
 
-        if (b.getPathingBehavior().getCurrent() != null) {
-            var toPlace2 = b.getPathingBehavior().getCurrent().toPlace();
-            if (toPlace2.size() != 0) {
-                Vec3d camPos = LookHelper.getCameraPos(AltoClef.getInstance());
-                Optional<BlockPos> temp = toPlace2.stream().min(StlHelper.compareValues(bpos -> camPos.distanceTo(bpos.toCenterPos())));
-                if (temp.isPresent()) {
-                    System.out.println("ASDF PLACING: " + temp.get());
-                }
-            }    
-        }
-
         // must be pathing and trying to right click
         if (!b.getPathingBehavior().isPathing()) {
             placeBlockTimeout.reset();
