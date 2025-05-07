@@ -1,14 +1,35 @@
 package adris.altoclef;
 
+import java.util.ArrayDeque;
+import java.util.Arrays;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+import java.util.function.Consumer;
+
+import org.lwjgl.glfw.GLFW;
+
 import adris.altoclef.butler.Butler;
-import adris.altoclef.chains.*;
+import adris.altoclef.chains.DeathMenuChain;
+import adris.altoclef.chains.FoodChain;
+import adris.altoclef.chains.MLGBucketFallChain;
+import adris.altoclef.chains.MobDefenseChain;
+import adris.altoclef.chains.PlayerDefenseChain;
+import adris.altoclef.chains.PlayerInteractionFixChain;
+import adris.altoclef.chains.PreEquipItemChain;
+import adris.altoclef.chains.UnstuckChain;
+import adris.altoclef.chains.UserTaskChain;
+import adris.altoclef.chains.WorldSurvivalChain;
 import adris.altoclef.commands.BlockScanner;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.control.InputControls;
 import adris.altoclef.control.PlayerExtraController;
 import adris.altoclef.control.SlotHandler;
 import adris.altoclef.eventbus.EventBus;
-import adris.altoclef.eventbus.events.*;
+import adris.altoclef.eventbus.events.ClientRenderEvent;
+import adris.altoclef.eventbus.events.ClientTickEvent;
+import adris.altoclef.eventbus.events.SendChatEvent;
+import adris.altoclef.eventbus.events.TitleScreenEntryEvent;
 import adris.altoclef.multiversion.DrawContextWrapper;
 import adris.altoclef.multiversion.RenderLayerVer;
 import adris.altoclef.multiversion.versionedfields.Blocks;
@@ -16,14 +37,20 @@ import adris.altoclef.player2api.AICommandBridge;
 import adris.altoclef.player2api.Character;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
-import adris.altoclef.trackers.*;
+import adris.altoclef.trackers.CraftingRecipeTracker;
+import adris.altoclef.trackers.EntityStuckTracker;
+import adris.altoclef.trackers.EntityTracker;
+import adris.altoclef.trackers.MiscBlockTracker;
+import adris.altoclef.trackers.SimpleChunkTracker;
+import adris.altoclef.trackers.TrackerManager;
+import adris.altoclef.trackers.UserBlockRangeTracker;
 import adris.altoclef.trackers.storage.ContainerSubTracker;
 import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.ui.AltoClefTickChart;
+import adris.altoclef.ui.ChatclefToggleButton;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
-import adris.altoclef.ui.ChatclefToggleButton;
 import adris.altoclef.ui.PlayerModeToggleButton;
 import adris.altoclef.ui.STTfeedback;
 import adris.altoclef.util.helpers.InputHelper;
@@ -33,21 +60,14 @@ import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import org.lwjgl.glfw.GLFW;
-import adris.altoclef.mixins.ChatInputMixin;
-
-import java.util.*;
-import java.util.function.Consumer;
 
 /**
  * Central access point for AltoClef
@@ -77,6 +97,7 @@ public class AltoClef implements ModInitializer {
     private MiscBlockTracker miscBlockTracker;
     private CraftingRecipeTracker craftingRecipeTracker;
     private EntityStuckTracker entityStuckTracker;
+    private UserBlockRangeTracker userBlockRangeTracker;
     // Renderers
     private CommandStatusOverlay commandStatusOverlay;
     private AltoClefTickChart altoClefTickChart;
@@ -187,6 +208,7 @@ public class AltoClef implements ModInitializer {
         miscBlockTracker = new MiscBlockTracker(this);
         craftingRecipeTracker = new CraftingRecipeTracker(trackerManager);
         entityStuckTracker = new EntityStuckTracker(trackerManager);
+        userBlockRangeTracker = new UserBlockRangeTracker(trackerManager);
 
         // Renderers
         commandStatusOverlay = new CommandStatusOverlay();
@@ -365,6 +387,8 @@ public class AltoClef implements ModInitializer {
         getExtraBaritoneSettings().canWalkOnEndPortal(false);
         // avoid block place on stuck entity
         getExtraBaritoneSettings().avoidBlockPlace(entityStuckTracker::isBlockedByEntity);
+        // avoid breaking near user blocks
+        getExtraBaritoneSettings().avoidBlockBreak(userBlockRangeTracker::isNearUserTrackedBlock);
         getClientBaritoneSettings().freeLook.value = false;
         getClientBaritoneSettings().overshootTraverse.value = false;
         getClientBaritoneSettings().allowOvershootDiagonalDescend.value = true;
