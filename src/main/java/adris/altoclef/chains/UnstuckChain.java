@@ -1,16 +1,23 @@
 package adris.altoclef.chains;
 
+import java.util.LinkedList;
+import java.util.Optional;
+
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.multiversion.entity.PlayerVer;
 import adris.altoclef.multiversion.versionedfields.Blocks;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.movement.GetOutOfWaterTask;
+import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.helpers.StlHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.time.TimerGame;
+import baritone.Baritone;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.EndPortalFrameBlock;
@@ -18,20 +25,26 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.util.hit.EntityHitResult;
+import net.minecraft.util.hit.HitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
-
-import java.util.LinkedList;
-import java.util.Optional;
 
 public class UnstuckChain extends SingleTaskChain {
 
     private final LinkedList<Vec3d> posHistory = new LinkedList<>();
     private boolean isProbablyStuck = false;
+
     private int eatingTicks = 0;
     private boolean interruptedEating = false;
+
     private TimerGame shimmyTaskTimer = new TimerGame(5);
     private boolean startedShimmying = false;
+
+    private TimerGame placeBlockTimeout = new TimerGame(2);
+
+    private TimerGame placeBlockGoToBlockTimeout = new TimerGame(5);
+    private BlockPos placeBlockGoToBlock = null;
 
     public UnstuckChain(TaskRunner runner) {
         super(runner);
@@ -138,6 +151,62 @@ public class UnstuckChain extends SingleTaskChain {
         }
     }
 
+    // Baritone might try to place a block THROUGH an entity. Detect this here
+    private void checkEntityBlocksPlacement() {
+
+        Baritone b = AltoClef.getInstance().getClientBaritone();
+
+        if (b.getPathingBehavior().getCurrent() != null) {
+            var toPlace2 = b.getPathingBehavior().getCurrent().toPlace();
+            if (toPlace2.size() != 0) {
+                Vec3d camPos = LookHelper.getCameraPos(AltoClef.getInstance());
+                Optional<BlockPos> temp = toPlace2.stream().min(StlHelper.compareValues(bpos -> camPos.distanceTo(bpos.toCenterPos())));
+                if (temp.isPresent()) {
+                    System.out.println("ASDF PLACING: " + temp.get());
+                }
+            }    
+        }
+
+        // must be pathing and trying to right click
+        if (!b.getPathingBehavior().isPathing()) {
+            placeBlockTimeout.reset();
+            return;
+        }
+        if (!b.getInputOverrideHandler().isInputForcedDown(Input.CLICK_RIGHT)) {
+            placeBlockTimeout.reset();
+            return;
+        }
+        // must be LOOKING at an entity
+
+        HitResult result = MinecraftClient.getInstance().crosshairTarget;
+
+        if (result == null || result.getType() != HitResult.Type.ENTITY) {
+            placeBlockTimeout.reset();
+            return;            
+        }
+        if (result instanceof EntityHitResult) {
+            if (placeBlockTimeout.elapsed()) {
+                if (b.getPathingBehavior().getCurrent() != null) {
+                    // We tried placing too long through this entity, get out of here!
+                    var toPlace = b.getPathingBehavior().getCurrent().toPlace();
+                    if (toPlace.size() != 0) {
+                        Vec3d camPos = LookHelper.getCameraPos(AltoClef.getInstance());
+                        Optional<BlockPos> closestPlace = toPlace.stream().min(StlHelper.compareValues(bpos -> camPos.distanceTo(bpos.toCenterPos())));
+                        if (closestPlace.isPresent()) {
+                            BlockPos f = closestPlace.get();
+                            placeBlockGoToBlock = f;
+                            placeBlockGoToBlockTimeout.reset();    
+                        }
+                    }
+                }
+                placeBlockTimeout.reset();
+            }
+            return;
+        }
+
+        placeBlockTimeout.reset();
+    }
+
     @Override
     public float getPriority() {
         if (mainTask instanceof GetOutOfWaterTask && mainTask.isActive()) {
@@ -165,17 +234,27 @@ public class UnstuckChain extends SingleTaskChain {
         checkStuckInPowderedSnow();
         checkEatingGlitch();
         checkStuckOnEndPortalFrame(mod);
-
+        checkEntityBlocksPlacement();
 
         if (isProbablyStuck) {
             return 55;
         }
 
+        // Shimmy out of the way
         if (startedShimmying && !shimmyTaskTimer.elapsed()) {
             setTask(new SafeRandomShimmyTask());
             return 55;
         }
         startedShimmying = false;
+
+        // We might place blocks but an entity blocks us
+        if (placeBlockGoToBlockTimeout.elapsed()) {
+            placeBlockGoToBlock = null;
+        }
+        if (placeBlockGoToBlock != null) {
+            setTask(new GetToBlockTask(placeBlockGoToBlock, false));
+            return 55;
+        }
 
         return Float.NEGATIVE_INFINITY;
     }
