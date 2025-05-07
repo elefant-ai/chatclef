@@ -24,8 +24,9 @@ public class EntityStuckTracker extends Tracker {
 
     public boolean isBlockedByEntity(BlockPos pos) {
         ensureUpdated();
-        boolean result = _blockedSpots.contains(pos);
-        return result;
+        synchronized (BaritoneHelper.MINECRAFT_LOCK) {
+            return _blockedSpots.contains(pos);
+        }
     }
 
     @Override
