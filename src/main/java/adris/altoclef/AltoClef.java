@@ -161,13 +161,10 @@ public class AltoClef implements ModInitializer {
         // This code should be run after Minecraft loads everything else in.
         // This is the actual start point, controlled by a mixin.
 
-        initializeBaritoneSettings();
-
         // Central Managers
         commandExecutor = new CommandExecutor(this);
         taskRunner = new TaskRunner(this);
         trackerManager = new TrackerManager(this);
-        botBehaviour = new BotBehaviour(this);
         extraController = new PlayerExtraController(this);
 
         // Task chains
@@ -202,6 +199,12 @@ public class AltoClef implements ModInitializer {
 
         butler = new Butler(this);
         aiBridge = new AICommandBridge(commandExecutor, this);
+
+        // Baritone
+        initializeBaritoneSettings();
+
+        // Initialize behavior (after baritone and other state that is set to start)
+        botBehaviour = new BotBehaviour(this);
 
         initializeCommands();
 

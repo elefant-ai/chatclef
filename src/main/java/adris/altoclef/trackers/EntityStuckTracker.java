@@ -23,7 +23,9 @@ public class EntityStuckTracker extends Tracker {
 
 
     public boolean isBlockedByEntity(BlockPos pos) {
-        return _blockedSpots.contains(pos);
+        ensureUpdated();
+        boolean result = _blockedSpots.contains(pos);
+        return result;
     }
 
     @Override
