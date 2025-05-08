@@ -25,6 +25,10 @@ public class BlockRange {
         return contains(pos, WorldHelper.getCurrentDimension());
     }
 
+    public boolean isValid() {
+        return start != null && end != null;
+    }
+
     public boolean contains(BlockPos pos, Dimension dimension) {
         if (this.dimension != dimension)
             return false;
