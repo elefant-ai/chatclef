@@ -1,63 +1,75 @@
 package adris.altoclef.trackers;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import com.google.common.collect.Streams;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.util.helpers.BaritoneHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3i;
 
 public class UserBlockRangeTracker extends Tracker {
 
     // TODO: Config
-    final int AVOID_BREAKING_VOXEL_SIZE = 8;
-    final Block[] USER_BLOCKS = ItemHelper.itemsToBlocks(ItemHelper.BED);
 
-    private final Set<Vec3i> _dontBreakVoxels = new HashSet<>();
+    final int AVOID_BREAKING_RANGE = 16;
+
+    final Block[] USER_INDICATOR_BLOCKS = Streams.concat(
+        Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.BED)),
+        Arrays.asList(Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.FLETCHING_TABLE, Blocks.ANVIL).stream()
+    ).toArray(Block[]::new);
+
+    final Block[] USER_BLOCKS_TO_AVOID_BREAKING = Streams.concat(
+        Arrays.asList(Blocks.COBBLESTONE).stream(),
+        Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.LOG))
+    ).toArray(Block[]::new);
+
+    private final Set<BlockPos> _dontBreakBlocks = new HashSet<>();
 
     public UserBlockRangeTracker(TrackerManager manager) {
         super(manager);
     }
 
-    private Vec3i blockPosToVoxel(BlockPos pos) {
-        return new Vec3i(pos.getX() / AVOID_BREAKING_VOXEL_SIZE, pos.getY() / AVOID_BREAKING_VOXEL_SIZE, pos.getZ() / AVOID_BREAKING_VOXEL_SIZE);
-    }
-
     public boolean isNearUserTrackedBlock(BlockPos pos) {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            return _dontBreakVoxels.contains(blockPosToVoxel(pos));
+            return _dontBreakBlocks.contains(pos);
         }
     }
 
     @Override
     protected void updateState() {
-        _dontBreakVoxels.clear();
-        List<BlockPos> userBlocks = AltoClef.getInstance().getBlockScanner().getKnownLocationsIncludeUnreachable(USER_BLOCKS);
+        _dontBreakBlocks.clear();
+        List<BlockPos> userBlocks = AltoClef.getInstance().getBlockScanner().getKnownLocationsIncludeUnreachable(USER_INDICATOR_BLOCKS);
+
+        Set<Block> userIndicatorBlocks = new HashSet<>(Arrays.asList(USER_INDICATOR_BLOCKS));
+        Set<Block> userBlocksToAvoidMining = new HashSet<>(Arrays.asList(USER_BLOCKS_TO_AVOID_BREAKING));
+
         // filter out user blocks
-        // TODO: is this a bad idea for the tracker...
+        // TODO: for some reason we haven't been validating in the world for block tracking... so we do it manually.
+        //      would "fixing" it cause problems?
         userBlocks.removeIf(bpos -> {
             Block b = AltoClef.getInstance().getWorld().getBlockState(bpos).getBlock();
-            for (Block check : USER_BLOCKS) {
-                if (check == b) {
-                    return false;
-                }
-            }
-            return true;
+            return !userIndicatorBlocks.contains(b);
         });
 
+
         for (BlockPos userBlockPos : userBlocks) {
-            Vec3i v = blockPosToVoxel(userBlockPos);
-            for (int dx = -1; dx <= 1; ++dx) {
-                for (int dz = -1; dz <= 1; ++dz) {
-                    for (int dy = -1; dy <= 1; ++dy) {
-                        Vec3i vToAvoid = new Vec3i(v.getX() + dx, v.getY() + dy, v.getZ() + dz);
-                        _dontBreakVoxels.add(vToAvoid);
-                    }
+
+            BlockPos min = userBlockPos.add(-AVOID_BREAKING_RANGE, -AVOID_BREAKING_RANGE, -AVOID_BREAKING_RANGE);
+            BlockPos max = userBlockPos.add(AVOID_BREAKING_RANGE, AVOID_BREAKING_RANGE, AVOID_BREAKING_RANGE);
+
+            // Range
+            for (BlockPos possible : adris.altoclef.util.helpers.WorldHelper.scanRegion(min, max)) {
+                Block b = AltoClef.getInstance().getWorld().getBlockState(possible).getBlock();
+                if (userBlocksToAvoidMining.contains(b)) {
+                    _dontBreakBlocks.add(possible);
                 }
             }
         }
@@ -65,7 +77,7 @@ public class UserBlockRangeTracker extends Tracker {
 
     @Override
     protected void reset() {
-        _dontBreakVoxels.clear();
+        _dontBreakBlocks.clear();
     }
     
 }
