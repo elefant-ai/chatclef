@@ -180,7 +180,8 @@ public class UnstuckChain extends SingleTaskChain {
                     var toPlace = b.getPathingBehavior().getCurrent().toPlace();
                     if (toPlace.size() != 0) {
                         Vec3d camPos = LookHelper.getCameraPos(AltoClef.getInstance());
-                        Optional<BlockPos> closestPlace = toPlace.stream().min(StlHelper.compareValues(bpos -> camPos.distanceTo(bpos.toCenterPos())));
+
+                        Optional<BlockPos> closestPlace = toPlace.stream().min(StlHelper.compareValues(bpos -> camPos.distanceTo(WorldHelper.toVec3d(bpos))));
                         if (closestPlace.isPresent()) {
                             BlockPos f = closestPlace.get();
                             placeBlockGoToBlock = f;
