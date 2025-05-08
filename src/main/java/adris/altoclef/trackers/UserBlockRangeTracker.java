@@ -21,8 +21,9 @@ public class UserBlockRangeTracker extends Tracker {
     final int AVOID_BREAKING_RANGE = 16;
 
     final Block[] USER_INDICATOR_BLOCKS = Streams.concat(
-        Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.BED)),
-        Arrays.asList(Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.FLETCHING_TABLE, Blocks.ANVIL).stream()
+        Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.BED))
+        // maybe add these in later, no need
+        // Arrays.asList(Blocks.CHEST, Blocks.TRAPPED_CHEST, Blocks.FLETCHING_TABLE, Blocks.ANVIL).stream()
     ).toArray(Block[]::new);
 
     final Block[] USER_BLOCKS_TO_AVOID_BREAKING = Streams.concat(
