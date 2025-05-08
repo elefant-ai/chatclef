@@ -15,6 +15,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.Slot;
@@ -66,7 +67,8 @@ public class CollectFoodTask extends Task {
 
     private final double unitsNeeded;
     private final TimerGame checkNewOptionsTimer = new TimerGame(10);
-    private final SmeltInSmokerTask smeltTask = null;
+    private SmeltInSmokerTask smeltTask = null;
+    private Item smeltRawMaterial = null;
     private Task currentResourceTask = null;
 
     public CollectFoodTask(double unitsNeeded) {
@@ -154,9 +156,13 @@ public class CollectFoodTask extends Task {
         }
         // If we were previously smelting, keep on smelting.
         if (smeltTask != null && smeltTask.isActive() && !smeltTask.isFinished()) {
-            // TODO: If we don't have cooking materials, cancel.
-            setDebugState("Cooking...");
-            return smeltTask;
+            // If we don't have cooking materials, cancel.
+            if (!mod.getItemStorage().hasItemScreen(smeltRawMaterial)) {
+                smeltTask = null;
+            } else {
+                setDebugState("Cooking...");
+                return smeltTask;    
+            }
         }
 
         if (checkNewOptionsTimer.elapsed()) {
@@ -194,17 +200,20 @@ public class CollectFoodTask extends Task {
             }
             // Convert raw foods -> cooked foods
 
-            /*for (CookableFoodTarget cookable : COOKABLE_FOODS) {
-                int rawCount = mod.getItemStorage().getItemCount(cookable.getRaw());
-                if (rawCount > 0) {
-                    //Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
-                    int toSmelt = rawCount + mod.getItemStorage().getItemCount(cookable.getCooked());
-                    smeltTask = new SmeltInSmokerTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
-                    smeltTask.ignoreMaterials();
-                    return smeltTask;
-                }
-            }*/
-        } else {
+            // for (CookableFoodTarget cookable : COOKABLE_FOODS) {
+            //     int rawCount = mod.getItemStorage().getItemCount(cookable.getRaw());
+            //     if (rawCount > 0) {
+            //         //Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
+            //         int toSmelt = rawCount + mod.getItemStorage().getItemCount(cookable.getCooked());
+            //         smeltTask = new SmeltInSmokerTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
+            //         smeltTask.ignoreMaterials();
+            //         smeltRawMaterial = cookable.getRaw();
+            //         return smeltTask;
+            //     }
+            // }
+        }
+        
+        {
             // Pick up food items from ground
             for (Item item : ITEMS_TO_PICK_UP) {
                 Task t = this.pickupTaskOrNull(mod, item);
@@ -269,6 +278,7 @@ public class CollectFoodTask extends Task {
                 if (!mod.getEntityTracker().entityFound(cookable.mobToKill)) continue;
                 Optional<Entity> nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),notBaby ,cookable.mobToKill);
                 if (nearest.isEmpty()) continue; // ?? This crashed once?
+                if (!nearest.get().isAlive()) continue;
                 int hungerPerformance = cookable.getCookedUnits();
                 double sqDistance = nearest.get().squaredDistanceTo(mod.getPlayer());
                 double score = (double) 100 * hungerPerformance / (sqDistance);
@@ -282,7 +292,7 @@ public class CollectFoodTask extends Task {
                 }
             }
             if (bestEntity != null) {
-                setDebugState("Killing " + bestEntity.getType().getTranslationKey());
+                setDebugState("Killing " + bestEntity.getType().getTranslationKey() + " ??? " + bestEntity.isAlive());
                 currentResourceTask = killTaskOrNull(bestEntity, notBaby, bestRawFood);
                 return currentResourceTask;
             }

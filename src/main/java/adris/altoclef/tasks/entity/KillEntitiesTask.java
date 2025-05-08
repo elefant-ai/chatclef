@@ -11,11 +11,11 @@ public class KillEntitiesTask extends DoToClosestEntityTask {
 
     // all entities constructor
     public KillEntitiesTask(Predicate<Entity> shouldKill) {
-        super(KillEntityTask::new, shouldKill, (Class[])null);
+        super(KillEntityTask::new, e -> e.isAlive() && shouldKill.test(e), (Class[])null);
     }
 
     public KillEntitiesTask(Predicate<Entity> shouldKill, Class<?>... entities) {
-        super(KillEntityTask::new, shouldKill, entities);
+        super(KillEntityTask::new, e -> e.isAlive() && shouldKill.test(e), entities);
         assert entities != null;
     }
 

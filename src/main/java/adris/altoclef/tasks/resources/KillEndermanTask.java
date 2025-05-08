@@ -72,6 +72,7 @@ public class KillEndermanTask extends ResourceTask {
 
         // Kill the angry one
         for (EndermanEntity entity : mod.getEntityTracker().getTrackedEntities(EndermanEntity.class)) {
+            if (!entity.isAlive()) continue;
 
             if (belowNetherRoof.test(entity) && entity.isAngry() && entity.getPos().isInRange(mod.getPlayer().getPos(), TOO_FAR_AWAY)) {
                 return new KillEntityTask(entity);
