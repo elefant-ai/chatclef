@@ -1,6 +1,6 @@
 # ChatClef  
 <p align="center">
-<img src="https://github.com/user-attachments/assets/52afdd23-3bc9-47c1-9e16-d3b20a6e2e80" width="45%"/>
+<img src="https://cdn.elefant.gg/image/png/chatclef_new_logo.png" width="45%"/>
 </p>
 
 ## ChatClef is a Minecraft AI copilot mod that can play the game for you or with you. 
