@@ -313,7 +313,7 @@ public class Playground {
                 GhastEntity ghast = ghasts.get(0);
                 mod.runUserTask(new ShootArrowSimpleProjectileTask(ghast));
                 break;
-            default:
+           default:
                 mod.logWarning("Test not found: \"" + arg + "\".");
                 break;
         }

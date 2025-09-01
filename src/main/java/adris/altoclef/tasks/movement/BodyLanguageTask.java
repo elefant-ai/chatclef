@@ -1,81 +1,138 @@
 package adris.altoclef.tasks.movement;
 
-import adris.altoclef.AltoClefController;
+import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.time.TimerGame;
+import baritone.api.utils.Rotation;
+import baritone.api.utils.input.Input;
 
-public class BodyLanguageTask extends Task{
-    public int phase = 0;
-    private final TimerGame timerGame = new TimerGame(1);
-    private String type;
-    private int count;
-    private boolean isDone = false;
+public class BodyLanguageTask extends Task {
 
-    public BodyLanguageTask(String type, int count){
-        this.type = type;
-        this.count = count;
+    public enum Type { GREETING, NOD_HEAD, SHAKE_HEAD, VICTORY_DANCE, MY_DANCE }
+
+    private final Type type;
+
+
+    private final PrimitiveSequenceTask seqGreeting = makeGreeting();
+    private final PrimitiveSequenceTask seqNodHead  = makeNodHead(2);
+    private final PrimitiveSequenceTask seqShake    = makeShakeHead(2);
+    private final PrimitiveSequenceTask seqVictory  = makeVictoryDance();
+
+    private final PrimitiveSequenceTask seqMyDance =
+            PrimitiveSequenceTask.builder()
+                .hold(Input.SNEAK)
+                .waitTicks(10)
+                .release(Input.SNEAK)
+                .jump() 
+                .waitTicks(5)
+                .lookRelative(new Rotation(40, 0), 5) 
+                .build();
+
+    private Task actuallyRunningTask;
+
+    public BodyLanguageTask(String type) {
+        this.type = parseType(type);
     }
 
-
-    @Override
-    public boolean isFinished() {
-        return isDone;
-    }
-
-    @Override
-    protected boolean isEqual(Task other) {
-        return other instanceof BodyLanguageTask && ((BodyLanguageTask)other).phase == phase;
+    private static Type parseType(String t) {
+        try { return Type.valueOf(t.toUpperCase()); }
+        catch (IllegalArgumentException e) { return Type.GREETING; }
     }
 
     @Override
     protected void onStart() {
-        AltoClefController mod = this.controller;
-        mod.getEntity().setShiftKeyDown(true);
-    }
-
-    @Override
-    protected void onStop(Task var1) {
-    }
-
-    private Task onTickGreeting(AltoClefController mod){
-        if(phase > 2){
-            return null; 
+        switch (type) {
+            case GREETING:
+                actuallyRunningTask = seqGreeting;
+                break;
+            case NOD_HEAD:
+                actuallyRunningTask = seqNodHead;
+                break;
+            case SHAKE_HEAD:
+                actuallyRunningTask = seqShake;
+                break;
+            case VICTORY_DANCE:
+                actuallyRunningTask = seqVictory;
+                break;
+            case MY_DANCE:
+                actuallyRunningTask = seqMyDance;
+                break;
         }
-        if(timerGame.elapsed()){
-            phase += 1;
-            timerGame.reset();
-            mod.getEntity().setShiftKeyDown(!mod.getEntity().isShiftKeyDown());
-        }
-        isDone = true;
-        return null;
-    }
-
-    private Task onTickNodHead(AltoClefController mod){
-        
-    }
-    private Task onTickShakeHead(AltoClefController mod){
-
-    }
-    private Task onTickVictoryDance(AltoClefController mod){
-
     }
 
     @Override
     protected Task onTick() {
-        AltoClefController mod = this.controller;
-        switch(type){
-            case "greeting":
-                return onTickGreeting(mod);
-            case "nodHead":
-                return onTickNodHead(mod);
-            case "shakeHead":
-                return onTickShakeHead(mod);
-            case "victoryDance":
-                return onTickVictoryDance(mod);
-        }
+        return actuallyRunningTask;
     }
+
+    @Override
+    public boolean isFinished() {
+        return actuallyRunningTask != null && actuallyRunningTask.isFinished();
+    }
+
+    @Override
+    protected boolean isEqual(Task other) {
+        if (!(other instanceof BodyLanguageTask)) return false;
+        BodyLanguageTask o = (BodyLanguageTask) other;
+        return o.type == this.type;
+    }
+
+    @Override
+    protected void onStop(Task next) {
+        AltoClef mod = AltoClef.getInstance();
+        mod.getInputControls().release(Input.SNEAK);
+        mod.getInputControls().release(Input.JUMP);
+        mod.getInputControls().release(Input.SPRINT);
+        mod.getInputControls().release(Input.MOVE_FORWARD);
+        mod.getInputControls().release(Input.MOVE_BACK);
+        mod.getInputControls().release(Input.MOVE_LEFT);
+        mod.getInputControls().release(Input.MOVE_RIGHT);
+    }
+
     @Override
     protected String toDebugString() {
-        return "GreetingCrouch";
+        return "BodyLanguage(" + type + ")";
+    }
+
+
+    private static PrimitiveSequenceTask makeGreeting() {
+        PrimitiveSequenceTask.Sequence.Builder b = PrimitiveSequenceTask.builder();
+        int bobCount = 3;
+        int holdTicks = 6, pauseTicks = 6;
+        for (int i = 0; i < bobCount; i++) {
+            b.hold(Input.SNEAK).waitTicks(holdTicks).release(Input.SNEAK).waitTicks(pauseTicks);
+        }
+        return b.build();
+    }
+
+    private static PrimitiveSequenceTask makeNodHead(int nods) {
+        PrimitiveSequenceTask.Sequence.Builder b = PrimitiveSequenceTask.builder();
+        int ticks = 4;
+        float amp = 15f;
+        for (int i = 0; i < nods; i++) {
+            b.lookRelative(new Rotation(0, +amp), ticks);
+            b.lookRelative(new Rotation(0, -amp), ticks);
+        }
+        return b.build();
+    }
+
+    private static PrimitiveSequenceTask makeShakeHead(int shakes) {
+        PrimitiveSequenceTask.Sequence.Builder b = PrimitiveSequenceTask.builder();
+        int ticks = 4;
+        float amp = 20f; 
+        for (int i = 0; i < shakes; i++) {
+            b.lookRelative(new Rotation(+amp, 0), ticks);
+            b.lookRelative(new Rotation(-amp, 0), ticks);
+        }
+        return b.build();
+    }
+
+    private static PrimitiveSequenceTask makeVictoryDance() {
+        return PrimitiveSequenceTask.builder()
+                .jump()
+                .waitTicks(4)
+                .lookRelative(new Rotation(360f, 0), 20)   
+                .hold(Input.SNEAK).waitTicks(6).release(Input.SNEAK)
+                .jump()
+                .build();
     }
 }
