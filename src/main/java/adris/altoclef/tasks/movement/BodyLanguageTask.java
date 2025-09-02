@@ -7,25 +7,17 @@ import baritone.api.utils.input.Input;
 
 public class BodyLanguageTask extends Task {
 
-    public enum Type { GREETING, NOD_HEAD, SHAKE_HEAD, VICTORY_DANCE, MY_DANCE }
+    public enum Type { GREETING, NOD_HEAD, SHAKE_HEAD, VICTORY }
 
     private final Type type;
+    private final static float shakeNodHeadAngle = 40;
+    private final static int shakeNodHeadTime = 10; // ticks
 
 
     private final PrimitiveSequenceTask seqGreeting = makeGreeting();
     private final PrimitiveSequenceTask seqNodHead  = makeNodHead(2);
     private final PrimitiveSequenceTask seqShake    = makeShakeHead(2);
     private final PrimitiveSequenceTask seqVictory  = makeVictoryDance();
-
-    private final PrimitiveSequenceTask seqMyDance =
-            PrimitiveSequenceTask.builder()
-                .hold(Input.SNEAK)
-                .waitTicks(10)
-                .release(Input.SNEAK)
-                .jump() 
-                .waitTicks(5)
-                .lookRelative(new Rotation(40, 0), 5) 
-                .build();
 
     private Task actuallyRunningTask;
 
@@ -50,11 +42,8 @@ public class BodyLanguageTask extends Task {
             case SHAKE_HEAD:
                 actuallyRunningTask = seqShake;
                 break;
-            case VICTORY_DANCE:
+            case VICTORY:
                 actuallyRunningTask = seqVictory;
-                break;
-            case MY_DANCE:
-                actuallyRunningTask = seqMyDance;
                 break;
         }
     }
@@ -96,9 +85,9 @@ public class BodyLanguageTask extends Task {
 
     private static PrimitiveSequenceTask makeGreeting() {
         PrimitiveSequenceTask.Sequence.Builder b = PrimitiveSequenceTask.builder();
-        int bobCount = 3;
+        int sneakCount = 3;
         int holdTicks = 6, pauseTicks = 6;
-        for (int i = 0; i < bobCount; i++) {
+        for (int i = 0; i < sneakCount; i++) {
             b.hold(Input.SNEAK).waitTicks(holdTicks).release(Input.SNEAK).waitTicks(pauseTicks);
         }
         return b.build();
@@ -106,22 +95,19 @@ public class BodyLanguageTask extends Task {
 
     private static PrimitiveSequenceTask makeNodHead(int nods) {
         PrimitiveSequenceTask.Sequence.Builder b = PrimitiveSequenceTask.builder();
-        int ticks = 4;
-        float amp = 15f;
         for (int i = 0; i < nods; i++) {
-            b.lookRelative(new Rotation(0, +amp), ticks);
-            b.lookRelative(new Rotation(0, -amp), ticks);
+            b.lookRelative(new Rotation(0, +shakeNodHeadAngle), shakeNodHeadTime);
+            b.lookRelative(new Rotation(0, -shakeNodHeadAngle), shakeNodHeadTime);
         }
+        b.waitTicks(2);
         return b.build();
     }
 
     private static PrimitiveSequenceTask makeShakeHead(int shakes) {
         PrimitiveSequenceTask.Sequence.Builder b = PrimitiveSequenceTask.builder();
-        int ticks = 4;
-        float amp = 20f; 
         for (int i = 0; i < shakes; i++) {
-            b.lookRelative(new Rotation(+amp, 0), ticks);
-            b.lookRelative(new Rotation(-amp, 0), ticks);
+            b.lookRelative(new Rotation(+shakeNodHeadAngle, 0), shakeNodHeadTime);
+            b.lookRelative(new Rotation(-shakeNodHeadAngle, 0), shakeNodHeadTime);
         }
         return b.build();
     }
@@ -130,7 +116,8 @@ public class BodyLanguageTask extends Task {
         return PrimitiveSequenceTask.builder()
                 .jump()
                 .waitTicks(4)
-                .lookRelative(new Rotation(360f, 0), 20)   
+                .lookRelative(new Rotation(180f, 0), 20)   
+                .lookRelative(new Rotation(-180f, 0), 20)
                 .hold(Input.SNEAK).waitTicks(6).release(Input.SNEAK)
                 .jump()
                 .build();

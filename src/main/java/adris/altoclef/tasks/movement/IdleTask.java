@@ -16,6 +16,7 @@ public class IdleTask extends Task {
     @Override
     protected Task onTick() {
         // Do nothing except maybe test code
+
         Playground.IDLE_TEST_TICK_FUNCTION(AltoClef.getInstance());
         return null;
     }
